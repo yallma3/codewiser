@@ -1,0 +1,22 @@
+{
+  "$schema": "manifest.json",
+  "description": "Version manifest for downloadable framework artifacts. Used by setup.sh to detect and prompt for updates.",
+  "version": "1.0.0",
+  "files": {
+    "AGENTS.md": "1.0.0",
+    ".agents/skills/bootstrap/SKILL.md": "1.0.0",
+    ".agents/skills/create-brd/SKILL.md": "1.0.0",
+    ".agents/skills/create-plan/SKILL.md": "1.0.0",
+    ".agents/skills/create-ux-specs/SKILL.md": "1.0.0",
+    ".agents/skills/commit-research/SKILL.md": "1.0.0",
+    ".agents/skills/design-db/SKILL.md": "1.0.0",
+    ".agents/skills/implement-plan/SKILL.md": "1.0.0",
+    ".agents/skills/research/SKILL.md": "1.0.0",
+    ".agents/specs/README.md": "1.0.0",
+    ".agents/specs/product.md": "1.0.0",
+    ".agents/specs/system.md": "1.0.0",
+    ".agents/specs/spec-index.json": "1.0.0",
+    ".agents/plans/README.md": "1.0.0",
+    ".agents/research/README.md": "1.0.0"
+  }
+}
