@@ -20,9 +20,10 @@ All file modifications or code generation tasks MUST follow this lifecycle:
 
 ### Spec Creation Sequence (when establishing a new feature)
 1. **Bootstrap** — Initialize project context (`README.md`, `product.md`, `system.md`).
-2. **Create BRD** — Capture business requirements in `product_<domain>.md`.
-3. **Create UX Specs** — Define design system, personas, and UX requirements in `ux.md`.
-4. **Design DB** — Design relational schemas based on volumetric data; document in `system.md`.
+2. **Git Worktrees & Branch Management** — create an isolated feature branch or worktree before planning and spec changes.
+3. **Create BRD** — Capture business requirements in `product_<domain>.md`.
+4. **Create UX Specs** — Define design system, personas, and UX requirements in `ux.md`.
+5. **Design DB** — Design relational schemas based on volumetric data; document in `system.md`.
 
 ### For Complex Decisions
 1. **Research** — Produce an ADR (`.agents/research/research_YYMMDD_<topic>.md`)
