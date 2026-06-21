@@ -1,6 +1,6 @@
-# code-agent-setup-files
+# codewiser
 
-A **multi-agent AI development framework bootstrapper** — scaffolding and setup tooling for running multiple AI coding agents (OpenCode, Claude Code, Cursor, Antigravity, Kilo Code) on the same repository with **shared context, shared skills, and a spec-driven execution protocol**.
+A **multi-agent AI development framework** — a reusable skills-and-specs system for running multiple AI coding agents (OpenCode, Claude Code, Cursor, Antigravity, Kilo Code) on the same repository with **shared context, shared skills, and a spec-driven execution protocol**.
 
 ## Problem
 
@@ -13,6 +13,14 @@ A centralized `.agents/` directory and a universal `AGENTS.md` instruction file 
 ```
 .agents/
 ├── skills/           # What agents can do (commands/capabilities)
+│   ├── bootstrap/    #   Project initialization
+│   ├── create-brd/   #   Business requirements docs
+│   ├── create-plan/  #   Task planning
+│   ├── create-ux-specs/   #   UX specifications
+│   ├── design-db/    #   Database schema design
+│   ├── git-worktrees/#   Branch & worktree isolation
+│   ├── implement-plan/    #   Code implementation
+│   └── research/     #   Architecture decision records
 ├── specs/            # What agents are building (system & product architecture)
 │   ├── product.md    #   User stories, acceptance criteria, business logic
 │   ├── product_<brd>.md    #   Domain-scoped business requirements (for larger projects)
@@ -58,19 +66,22 @@ On Windows (PowerShell):
 ## Spec-Driven Workflow
 
 1. **Read specs** — Before writing code, agents read `.agents/specs/product.md` and `.agents/specs/system.md`
-2. **Update specs first** — If an implementation changes the design, update specs before writing production code
-3. **Document decisions** — Architecture rationale goes in `.agents/research/` as ADRs
-4. **Plan execution** — Task breakdowns go in `.agents/plans/` (naming: `plan_YYMMDD_<name>.md`)
+2. **Git Worktrees first** — Create an isolated feature branch/worktree before planning and spec changes (see [git-worktrees skill](.agents/skills/git-worktrees/SKILL.md))
+3. **Update specs first** — If an implementation changes the design, update specs before writing production code
+4. **Document decisions** — Architecture rationale goes in `.agents/research/` as ADRs
+5. **Plan execution** — Task breakdowns go in `.agents/plans/` (naming: `plan_YYMMDD_<name>.md`)
 
 ## Adding a New Skill
 
 Skills are shared across all agents. Create a file at `.agents/skills/<skill-name>/SKILL.md` with instructions for what the skill does. Then update the `files` section in `manifest.json` with an initial version. The setup script symlinks this directory into each agent's private config so every agent can load it.
 
+Example: the [git-worktrees skill](.agents/skills/git-worktrees/SKILL.md) was added to teach agents how to isolate feature work using branches and worktrees during concurrent multi-agent development.
+
 ## Setup Scripts
 
 | Platform | Script | Source |
 |---|---|---|
-| Linux / macOS | `setup.sh` | Downloads `AGENTS.md`, skills, and specs from the GitHub repo |
+| Linux / macOS | `setup.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
 | Windows | `setup.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
 
 Both scripts use `manifest.json` to track artifact versions and prompt to overwrite when a newer version is available.
