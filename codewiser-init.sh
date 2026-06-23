@@ -2,7 +2,7 @@
 
 set -e
 
-RAW_BASE="https://raw.githubusercontent.com/AssemHassan/code-agent-setup-files/main"
+RAW_BASE="https://raw.githubusercontent.com/yallma3/codewiser/main"
 
 # --- Argument validation ---
 if [ $# -lt 1 ]; then

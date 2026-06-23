@@ -3,7 +3,7 @@ param(
     [string]$TargetDir
 )
 
-$RAW_BASE = "https://raw.githubusercontent.com/AssemHassan/code-agent-setup-files/main"
+$RAW_BASE = "https://raw.githubusercontent.com/yallma3/codewiser/main"
 
 $TargetDir = Resolve-Path $TargetDir -ErrorAction SilentlyContinue
 if (-not $TargetDir) {

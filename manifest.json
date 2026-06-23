@@ -1,6 +1,6 @@
 {
   "$schema": "manifest.json",
-  "description": "Version manifest for downloadable framework artifacts. Used by setup.sh to detect and prompt for updates.",
+  "description": "Version manifest for downloadable framework artifacts. Used by codewiser-init.sh to detect and prompt for updates.",
   "version": "1.0.0",
   "files": {
     "AGENTS.md": "1.0.0",

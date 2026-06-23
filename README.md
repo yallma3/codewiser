@@ -36,7 +36,7 @@ A centralized `.agents/` directory and a universal `AGENTS.md` instruction file 
 
 ```bash
 # 1. Run the interactive setup script with a target directory
-./setup.sh ./my-project
+./codewiser-init.sh ./my-project
 
 # 2. Select your AI agents (OpenCode, Claude Code, Cursor, etc.)
 #    The script downloads the latest AGENTS.md, skills, and spec
@@ -50,7 +50,7 @@ A centralized `.agents/` directory and a universal `AGENTS.md` instruction file 
 On Windows (PowerShell):
 
 ```powershell
-.\setup.ps1 .\my-project
+.\codewiser-init.ps1 .\my-project
 ```
 
 ## Supported Agents
@@ -81,8 +81,8 @@ Example: the [git-worktrees skill](.agents/skills/git-worktrees/SKILL.md) was ad
 
 | Platform | Script | Source |
 |---|---|---|
-| Linux / macOS | `setup.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
-| Windows | `setup.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
+| Linux / macOS | `codewiser-init.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
+| Windows | `codewiser-init.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
 
 Both scripts use `manifest.json` to track artifact versions and prompt to overwrite when a newer version is available.
 
