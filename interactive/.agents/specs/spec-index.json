@@ -1,0 +1,5 @@
+{
+  "$schema": "spec-index.json",
+  "description": "Maps source files to their test suites and functional specs.",
+  "entries": []
+}

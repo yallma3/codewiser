@@ -32,7 +32,7 @@ Update the relevant spec files to reflect the new design. Scope the changes as n
 Each updated spec must include a reference to the research that drove the change. Add a line such as:
 
 ```markdown
-> **ADR**: [research_YYMMDD_<topic>.md](../research/research_YYMMDD_<topic>.md)
+> **ADR**: [research_YYMMDD_<topic>.md](../../research/research_YYMMDD_<topic>.md)
 ```
 
 ### 3. Update the Research Document

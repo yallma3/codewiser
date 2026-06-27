@@ -207,6 +207,33 @@ for wf in d.get('workflows', {}):
         fi
     done
 
+    # Build deduplicated skill directories from selected workflows
+    SKILL_DIRS=()
+    for wf in "${WF_SELECTED_NAMES[@]}"; do
+        case "$wf" in
+            frontend) SKILL_DIRS+=("shared" "frontend") ;;
+            backend)  SKILL_DIRS+=("shared" "backend") ;;
+        esac
+    done
+    declare -A _seen_sd
+    SKILL_DIRS_DEDUP=()
+    for dir in "${SKILL_DIRS[@]}"; do
+        [[ -z "${_seen_sd[$dir]}" ]] && SKILL_DIRS_DEDUP+=("$dir") && _seen_sd[$dir]=1
+    done
+
+    # Generate Python list string for skill directories
+    SKILL_DIRS_PYTHON="["
+    _first=true
+    for dir in "${SKILL_DIRS_DEDUP[@]}"; do
+        if $_first; then
+            SKILL_DIRS_PYTHON="$SKILL_DIRS_PYTHON'$dir'"
+            _first=false
+        else
+            SKILL_DIRS_PYTHON="$SKILL_DIRS_PYTHON, '$dir'"
+        fi
+    done
+    SKILL_DIRS_PYTHON="$SKILL_DIRS_PYTHON]"
+
     # Join indices with commas for Python list syntax
     SELECTED_WF_INDICES_JOINED=$(IFS=,; echo "${SELECTED_WF_INDICES[*]}")
 
@@ -255,6 +282,10 @@ else
             | grep -o '"[0-9.]*"' | tr -d '"')
         REMOTE_VERSIONS["$path"]="$ver"
     done
+
+    # Fallback: no workflow selection (v1.x flat format)
+    SKILL_DIRS_DEDUP=()
+    SKILL_DIRS_PYTHON="[]"
 fi
 
 # --- 3. Download/update files ---
@@ -295,7 +326,24 @@ download "$RAW_BASE/manifest.json" "$LOCAL_MANIFEST" || true
 # --- 4. Generate supplementary explicit configurations ---
 if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then
     echo "📄 Creating opencode.json..."
-    cat << EOF > "$TARGET_DIR/opencode.json"
+    if [ "${#SKILL_DIRS_DEDUP[@]}" -gt 0 ]; then
+        TARGET_DIR="$TARGET_DIR" python3 -c "
+import json, os
+skill_dirs = $SKILL_DIRS_PYTHON
+target = os.environ['TARGET_DIR']
+config = {
+    '\$schema': 'https://opencode.ai/config.json',
+    'skills': {
+        'paths': ['.agents/skills/' + d for d in skill_dirs]
+    },
+    'instructions': ['.agents/skills/' + d + '/**/SKILL.md' for d in skill_dirs] + ['AGENTS.md']
+}
+with open(os.path.join(target, 'opencode.json'), 'w') as f:
+    json.dump(config, f, indent=2)
+"
+    else
+        # Fallback for v1.x flat manifest format
+        cat << EOF > "$TARGET_DIR/opencode.json"
 {
   "\$schema": "https://opencode.ai/config.json",
   "skills": {
@@ -309,6 +357,7 @@ if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then
   ]
 }
 EOF
+    fi
 fi
 
 if $use_claude && [ ! -f "$TARGET_DIR/CLAUDE.md" ]; then
@@ -339,12 +388,28 @@ fi
 
 if $use_kilo && [ ! -f "$TARGET_DIR/.kilo/config.json" ]; then
     echo "📄 Creating .kilo/config.json..."
-    cat << 'EOF' > "$TARGET_DIR/.kilo/config.json"
+    if [ "${#SKILL_DIRS_DEDUP[@]}" -gt 0 ]; then
+        TARGET_DIR="$TARGET_DIR" python3 -c "
+import json, os
+skill_dirs = $SKILL_DIRS_PYTHON
+target = os.environ['TARGET_DIR']
+instructions = ['AGENTS.md']
+instructions += ['.agents/skills/' + d + '/**/SKILL.md' for d in skill_dirs]
+config = {
+    '\$schema': 'https://app.kilo.ai/config.json',
+    'instructions': instructions
+}
+with open(os.path.join(target, '.kilo', 'config.json'), 'w') as f:
+    json.dump(config, f, indent=2)
+"
+    else
+        cat << 'EOF' > "$TARGET_DIR/.kilo/config.json"
 {
   "\$schema": "https://app.kilo.ai/config.json",
   "instructions": ["AGENTS.md", ".agents/skills/*/SKILL.md"]
 }
 EOF
+    fi
 fi
 
 # --- 5. Create symbolic links ---
