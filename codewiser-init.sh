@@ -161,6 +161,11 @@ if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then
     cat << EOF > "$TARGET_DIR/opencode.json"
 {
   "\$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "paths": [
+      ".agents/skills"
+    ]
+  },
   "instructions": [
     ".agents/skills/**/SKILL.md",
     "AGENTS.md"

@@ -158,6 +158,11 @@ if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
     @"
 {
   "\$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "paths": [
+      ".agents/skills"
+    ]
+  },
   "instructions": [
     ".agents/skills/**/SKILL.md",
     "AGENTS.md"
