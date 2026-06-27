@@ -73,7 +73,7 @@ On Windows (PowerShell):
 
 ## Adding a New Skill
 
-Skills are shared across all agents. Create a file at `.agents/skills/<skill-name>/SKILL.md` with instructions for what the skill does. Then update the `files` section in `manifest.json` with an initial version. The setup script symlinks this directory into each agent's private config so every agent can load it.
+Skills are shared across all agents. Create a file at `.agents/skills/<skill-name>/SKILL.md` with instructions for what the skill does. Then add it to the relevant workflow stage's `files` section in `manifest.json` with an initial version. The setup script symlinks this directory into each agent's private config so every agent can load it.
 
 Example: the [git-worktrees skill](.agents/skills/git-worktrees/SKILL.md) was added to teach agents how to isolate feature work using branches and worktrees during concurrent multi-agent development.
 
@@ -84,7 +84,7 @@ Example: the [git-worktrees skill](.agents/skills/git-worktrees/SKILL.md) was ad
 | Linux / macOS | `codewiser-init.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
 | Windows | `codewiser-init.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
 
-Both scripts use `manifest.json` to track artifact versions and prompt to overwrite when a newer version is available.
+Both scripts use `manifest.json` to track artifact versions organized by workflows and stages. During setup, you select which AI agents and which workflows (e.g., frontend, backend) to install. Only files from the selected workflows' stages are downloaded.
 
 ## Requirements
 

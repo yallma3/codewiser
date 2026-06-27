@@ -30,6 +30,46 @@ download() {
     return 1
 }
 
+# --- Helper: parse JSON with python3 ---
+json_parse() {
+    local manifest="$1"
+    local expr="$2"
+    if command -v python3 &>/dev/null; then
+        python3 -c "
+import json,sys
+with open('$manifest') as f:
+    d = json.load(f)
+$expr
+" 2>/dev/null
+    fi
+}
+
+# --- Helper: get version for a file path from local manifest ---
+get_manifest_version() {
+    local manifest="$1"
+    local path="$2"
+    if command -v python3 &>/dev/null; then
+        python3 -c "
+import json,sys
+with open('$manifest') as f:
+    d = json.load(f)
+if 'workflows' in d:
+    for wf in d['workflows'].values():
+        for stage in wf.get('stages', {}).values():
+            if '$path' in stage.get('files', {}):
+                print(stage['files']['$path'])
+                sys.exit(0)
+elif 'files' in d and '$path' in d['files']:
+    print(d['files']['$path'])
+" 2>/dev/null
+    fi
+}
+
+# --- Helper: compare two dot-separated version strings (returns 0 if v1 < v2) ---
+version_lt() {
+    printf '%s\n' "$1" "$2" | sort -V | head -1 | grep -qxF "$1"
+}
+
 # --- Agent Selection (checkbox-style) ---
 declare -a selections=(0 0 0 0 0)
 choices=("OpenCode / MiMo / Crush" "Claude Code" "Cursor" "Antigravity" "Kilo Code")
@@ -87,27 +127,12 @@ $use_cursor && mkdir -p "$TARGET_DIR/.cursor"
 $use_antigravity && mkdir -p "$TARGET_DIR/.antigravity"
 $use_kilo && mkdir -p "$TARGET_DIR/.kilo"
 
-# --- Helper: get version value from a manifest JSON file for a given path ---
-get_manifest_version() {
-    local manifest="$1"
-    local path="$2"
-    local escaped_path
-    escaped_path=$(echo "$path" | sed 's|\.|\\.|g; s|/|\\/|g')
-    grep -o "\"$escaped_path\"[[:space:]]*:[[:space:]]*\"[0-9.]*\"" "$manifest" 2>/dev/null \
-        | grep -o '"[0-9.]*"' | tr -d '"'
-}
-
-# --- Helper: compare two dot-separated version strings (returns 0 if v1 < v2) ---
-version_lt() {
-    printf '%s\n' "$1" "$2" | sort -V | head -1 | grep -qxF "$1"
-}
-
-# --- 2. Download shared framework files from repo using manifest versioning ---
+# --- 2. Download remote manifest ---
 echo ""
-echo "📥 Checking for framework updates..."
+echo "📥 Fetching available workflows..."
 
-LOCAL_MANIFEST="$TARGET_DIR/.agents/manifest.json"
 REMOTE_MANIFEST=$(mktemp)
+LOCAL_MANIFEST="$TARGET_DIR/.agents/manifest.json"
 
 download "$RAW_BASE/manifest.json" "$REMOTE_MANIFEST"
 if [ ! -s "$REMOTE_MANIFEST" ]; then
@@ -116,17 +141,129 @@ if [ ! -s "$REMOTE_MANIFEST" ]; then
     exit 1
 fi
 
-# Read all file paths from the remote manifest into an array
-mapfile -t REMOTE_PATHS < <(
-    grep -o '"[^"]*\.\(md\|json\)"[[:space:]]*:' "$REMOTE_MANIFEST" | tr -d '"' | sed 's/://'
-)
+# Detect manifest format: workflows or flat files
+HAS_WORKFLOWS=$(json_parse "$REMOTE_MANIFEST" "print('true' if 'workflows' in d else 'false')")
 
+if [ "$HAS_WORKFLOWS" = "true" ]; then
+    # --- Workflow Selection ---
+    mapfile -t WORKFLOW_NAMES < <(json_parse "$REMOTE_MANIFEST" "
+for wf in d.get('workflows', {}):
+    print(wf)
+")
+
+    if [ ${#WORKFLOW_NAMES[@]} -eq 0 ]; then
+        echo "  ⚠ No workflows found in manifest. Aborting."
+        rm -f "$REMOTE_MANIFEST"
+        exit 1
+    fi
+
+    declare -a wf_selections
+    for i in "${!WORKFLOW_NAMES[@]}"; do
+        wf_selections[$i]=0
+    done
+
+    echo ""
+    echo "Select workflows to install (enter number to toggle, 'd' when done):"
+
+    while true; do
+        for i in "${!WORKFLOW_NAMES[@]}"; do
+            mark=" "
+            [[ ${wf_selections[$i]} -eq 1 ]] && mark="x"
+            echo "  [$mark] $((i+1))) ${WORKFLOW_NAMES[$i]}"
+        done
+        echo "  [ ] d) Done"
+        echo "  [ ] c) Cancel"
+        read -p "> " input
+
+        case "$input" in
+            [1-9]*)
+                idx=$((input-1))
+                [ $idx -ge ${#WORKFLOW_NAMES[@]} ] && echo "  Invalid choice." && continue
+                [[ ${wf_selections[$idx]} -eq 1 ]] && wf_selections[$idx]=0 || wf_selections[$idx]=1
+                ;;
+            d|D|"")
+                any_selected=false
+                for s in "${wf_selections[@]}"; do
+                    [[ $s -eq 1 ]] && any_selected=true && break
+                done
+                if ! $any_selected; then
+                    echo "  ⚠ No workflows selected."
+                    continue
+                fi
+                break
+                ;;
+            c|C) echo "Cancelled."; rm -f "$REMOTE_MANIFEST"; exit 0 ;;
+            *) echo "  Invalid choice." ;;
+        esac
+    done
+
+    # Build selected workflow indices list
+    SELECTED_WF_INDICES=()
+    WF_SELECTED_NAMES=()
+    for i in "${!wf_selections[@]}"; do
+        if [[ ${wf_selections[$i]} -eq 1 ]]; then
+            SELECTED_WF_INDICES+=("$i")
+            WF_SELECTED_NAMES+=("${WORKFLOW_NAMES[$i]}")
+        fi
+    done
+
+    # Join indices with commas for Python list syntax
+    SELECTED_WF_INDICES_JOINED=$(IFS=,; echo "${SELECTED_WF_INDICES[*]}")
+
+    # --- Flatten selected workflows into deduplicated file list ---
+    echo ""
+    echo "📥 Checking for framework updates..."
+    echo "  Workflows: ${WF_SELECTED_NAMES[*]}"
+
+    # Extract paths and versions as pipe-delimited lines
+    RAW_FILE_LIST=$(json_parse "$REMOTE_MANIFEST" "
+wfs = list(d.get('workflows', {}))
+selected = [${SELECTED_WF_INDICES_JOINED}]
+files = {}
+for idx in selected:
+    wf_name = wfs[idx]
+    wf = d['workflows'][wf_name]
+    for sname, stage in wf.get('stages', {}).items():
+        for fpath, fver in stage.get('files', {}).items():
+            files[fpath] = fver
+for path, ver in files.items():
+    print(path + '|' + ver)
+")
+
+    REMOTE_PATHS=()
+    declare -A REMOTE_VERSIONS
+    while IFS='|' read -r path ver; do
+        [ -z "$path" ] && continue
+        REMOTE_PATHS+=("$path")
+        REMOTE_VERSIONS["$path"]="$ver"
+    done <<< "$RAW_FILE_LIST"
+else
+    # --- Backward compatibility: flat files structure (v1.x) ---
+    echo ""
+    echo "📥 Checking for framework updates..."
+
+    mapfile -t REMOTE_PATHS < <(
+        grep -o '"[^"]*\.\(md\|json\)"[[:space:]]*:' "$REMOTE_MANIFEST" | tr -d '"' | sed 's/://'
+    )
+
+    declare -A REMOTE_VERSIONS
+    for path in "${REMOTE_PATHS[@]}"; do
+        [ -z "$path" ] && continue
+        local escaped_path
+        escaped_path=$(echo "$path" | sed 's|\.|\\.|g; s|/|\\/|g')
+        ver=$(grep -o "\"$escaped_path\"[[:space:]]*:[[:space:]]*\"[0-9.]*\"" "$REMOTE_MANIFEST" 2>/dev/null \
+            | grep -o '"[0-9.]*"' | tr -d '"')
+        REMOTE_VERSIONS["$path"]="$ver"
+    done
+fi
+
+# --- 3. Download/update files ---
 for path in "${REMOTE_PATHS[@]}"; do
     [ -z "$path" ] && continue
 
     dest="$TARGET_DIR/$path"
     url="$RAW_BASE/$path"
-    remote_ver=$(get_manifest_version "$REMOTE_MANIFEST" "$path")
+    remote_ver="${REMOTE_VERSIONS[$path]}"
 
     if [ ! -f "$dest" ]; then
         mkdir -p "$(dirname "$dest")"
@@ -155,7 +292,7 @@ rm -f "$REMOTE_MANIFEST"
 # Save updated local manifest
 download "$RAW_BASE/manifest.json" "$LOCAL_MANIFEST" || true
 
-# --- 3. Generate supplementary explicit configurations ---
+# --- 4. Generate supplementary explicit configurations ---
 if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then
     echo "📄 Creating opencode.json..."
     cat << EOF > "$TARGET_DIR/opencode.json"
@@ -210,7 +347,7 @@ if $use_kilo && [ ! -f "$TARGET_DIR/.kilo/config.json" ]; then
 EOF
 fi
 
-# --- 4. Create symbolic links ---
+# --- 5. Create symbolic links ---
 echo ""
 echo "🔗 Generating symbolic links..."
 

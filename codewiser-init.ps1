@@ -94,9 +94,46 @@ function Version-Lt {
     return $false
 }
 
-# --- 2. Download shared framework files from repo using manifest versioning ---
+# --- Helper: get version for a file path from local manifest ---
+function Get-ManifestVersion {
+    param([string]$ManifestPath, [string]$FilePath)
+    if (-not (Test-Path $ManifestPath)) { return $null }
+    $obj = Get-Content $ManifestPath -Raw | ConvertFrom-Json
+    if ($obj.workflows) {
+        foreach ($wf in $obj.workflows.PSObject.Properties.Value) {
+            foreach ($stage in $wf.stages.PSObject.Properties.Value) {
+                if ($stage.files.$FilePath) {
+                    return $stage.files.$FilePath
+                }
+            }
+        }
+        return $null
+    } elseif ($obj.files) {
+        return $obj.files.$FilePath
+    }
+    return $null
+}
+
+# --- Helper: flatten selected workflows into a file dictionary ---
+function Flatten-WorkflowFiles {
+    param([PSObject]$ManifestObj, [int[]]$SelectedIndices)
+    $wfNames = @($ManifestObj.workflows.PSObject.Properties.Name)
+    $files = @{}
+    foreach ($idx in $SelectedIndices) {
+        $wfName = $wfNames[$idx]
+        $wf = $ManifestObj.workflows.$wfName
+        foreach ($stage in $wf.stages.PSObject.Properties.Value) {
+            foreach ($entry in $stage.files.PSObject.Properties) {
+                $files[$entry.Name] = $entry.Value
+            }
+        }
+    }
+    return $files
+}
+
+# --- 2. Download remote manifest ---
 Write-Host ""
-Write-Host "📥 Checking for framework updates..."
+Write-Host "📥 Fetching available workflows..."
 
 $localManifestPath = "$TargetDir\.agents\manifest.json"
 $remoteManifest = New-TemporaryFile
@@ -109,24 +146,94 @@ if (-not $manifestOk) {
 }
 
 $remoteManifestObj = Get-Content $remoteManifest.FullName -Raw | ConvertFrom-Json
-$files = $remoteManifestObj.files.PSObject.Properties
 
 $localManifestObj = $null
 if (Test-Path $localManifestPath) {
     $localManifestObj = Get-Content $localManifestPath -Raw | ConvertFrom-Json
 }
 
-foreach ($entry in $files) {
-    $path = $entry.Name
+# Detect format and optionally prompt for workflow selection
+$remoteFiles = @{}
+if ($remoteManifestObj.workflows) {
+    # --- Workflow Selection ---
+    $wfNames = @($remoteManifestObj.workflows.PSObject.Properties.Name)
+    $wfSelections = @($false) * $wfNames.Count
+
+    Write-Host ""
+    Write-Host "Select workflows to install (enter number to toggle, 'd' when done):"
+
+    while ($true) {
+        for ($i = 0; $i -lt $wfNames.Count; $i++) {
+            $mark = " "
+            if ($wfSelections[$i]) { $mark = "x" }
+            Write-Host "  [$mark] $($i+1))) $($wfNames[$i])"
+        }
+        Write-Host "  [ ] d) Done"
+        Write-Host "  [ ] c) Cancel"
+        $input = Read-Host "> "
+
+        switch ($input) {
+            { $_ -in "1".."9" } {
+                $idx = [int]$input - 1
+                if ($idx -ge $wfNames.Count) {
+                    Write-Host "  Invalid choice."
+                    continue
+                }
+                $wfSelections[$idx] = -not $wfSelections[$idx]
+            }
+            { $_ -in "d","D","" } {
+                $any = $false
+                foreach ($s in $wfSelections) { if ($s) { $any = $true; break } }
+                if (-not $any) {
+                    Write-Host "  ⚠ No workflows selected."
+                    continue
+                }
+                break
+            }
+            { $_ -in "c","C" } { Write-Host "Cancelled."; Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue; exit 0 }
+            default { Write-Host "  Invalid choice." }
+        }
+    }
+
+    # Build selected workflow indices
+    $selectedIndices = @()
+    $selectedNames = @()
+    for ($i = 0; $i -lt $wfSelections.Count; $i++) {
+        if ($wfSelections[$i]) {
+            $selectedIndices += $i
+            $selectedNames += $wfNames[$i]
+        }
+    }
+
+    Write-Host ""
+    Write-Host "📥 Checking for framework updates..."
+    Write-Host "  Workflows: $($selectedNames -join ' ')"
+
+    $remoteFiles = Flatten-WorkflowFiles -ManifestObj $remoteManifestObj -SelectedIndices $selectedIndices
+} elseif ($remoteManifestObj.files) {
+    # --- Backward compatibility: flat files structure (v1.x) ---
+    Write-Host ""
+    Write-Host "📥 Checking for framework updates..."
+
+    foreach ($entry in $remoteManifestObj.files.PSObject.Properties) {
+        $remoteFiles[$entry.Name] = $entry.Value
+    }
+} else {
+    Write-Host "  ⚠ Unknown manifest format. Aborting."
+    Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
+    exit 1
+}
+
+# --- 3. Download/update files ---
+foreach ($entry in $remoteFiles.GetEnumerator()) {
+    $path = $entry.Key
     $remoteVer = $entry.Value
 
     $dest = "$TargetDir\$path"
     $url = "$RAW_BASE/$path"
 
-    $localVer = "0.0.0"
-    if ($localManifestObj -and $localManifestObj.files.$path) {
-        $localVer = $localManifestObj.files.$path
-    }
+    $localVer = Get-ManifestVersion -ManifestPath $localManifestPath -FilePath $path
+    if (-not $localVer) { $localVer = "0.0.0" }
 
     if (-not (Test-Path $dest)) {
         New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
@@ -152,7 +259,7 @@ Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
 # Save updated local manifest
 Download -Url "$RAW_BASE/manifest.json" -Dest $localManifestPath | Out-Null
 
-# --- 3. Generate supplementary explicit configurations ---
+# --- 4. Generate supplementary explicit configurations ---
 if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
     Write-Host "📄 Creating opencode.json..."
     @"
@@ -209,7 +316,7 @@ if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
 "@ | Set-Content "$TargetDir\.kilo\config.json" -NoNewline
 }
 
-# --- 4. Create symbolic links ---
+# --- 5. Create symbolic links ---
 Write-Host ""
 Write-Host "🔗 Generating symbolic links..."
 
