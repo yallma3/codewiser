@@ -1,24 +1,101 @@
 {
   "$schema": "manifest.json",
-  "description": "Version manifest for downloadable framework artifacts. Used by codewiser-init.sh to detect and prompt for updates.",
-  "version": "1.0.0",
-  "files": {
-    "AGENTS.md": "1.0.0",
-    ".agents/skills/bootstrap/SKILL.md": "1.0.0",
-    ".agents/skills/create-brd/SKILL.md": "1.0.0",
-    ".agents/skills/create-plan/SKILL.md": "1.0.0",
-    ".agents/skills/create-ux-specs/SKILL.md": "1.0.0",
-    ".agents/skills/commit-research/SKILL.md": "1.0.0",
-    ".agents/skills/design-db/SKILL.md": "1.0.0",
-    ".agents/skills/implement-plan/SKILL.md": "1.0.0",
-    ".agents/skills/research/SKILL.md": "1.0.0",
-    ".agents/specs/README.md": "1.0.0",
-    ".agents/specs/product.md": "1.0.0",
-    ".agents/specs/system.md": "1.0.0",
-    ".agents/specs/spec-index.json": "1.0.0",
-    ".agents/plans/README.md": "1.0.0",
-    ".agents/research/README.md": "1.0.0",
-    ".agents/git-worktrees/README.md": "1.0.0"
-    
+  "description": "Version manifest for downloadable framework artifacts. Organized by workflows and stages. Used by codewiser-init.sh to detect and prompt for updates.",
+  "version": "2.0.0",
+  "workflows": {
+    "frontend": {
+      "description": "Frontend feature development workflow",
+      "version": "1.0.0",
+      "stages": {
+        "product-mvp": {
+          "description": "Product requirements and MVP definition",
+          "version": "1.0.0",
+          "files": {
+            "AGENTS.md": "1.0.0",
+            ".agents/skills/bootstrap/SKILL.md": "1.0.0",
+            ".agents/skills/create-brd/SKILL.md": "1.0.0",
+            ".agents/specs/product.md": "1.0.0",
+            ".agents/specs/system.md": "1.0.0",
+            ".agents/specs/README.md": "1.0.0",
+            ".agents/specs/spec-index.json": "1.0.0"
+          }
+        },
+        "ux": {
+          "description": "UX design and specifications",
+          "version": "1.0.0",
+          "files": {
+            ".agents/skills/create-ux-specs/SKILL.md": "1.0.0",
+            ".agents/skills/design-db/SKILL.md": "1.0.0"
+          }
+        },
+        "plan": {
+          "description": "Task planning and breakdown",
+          "version": "1.0.0",
+          "files": {
+            ".agents/skills/create-plan/SKILL.md": "1.0.0",
+            ".agents/plans/README.md": "1.0.0"
+          }
+        },
+        "implement": {
+          "description": "Implementation, research, and version control",
+          "version": "1.0.0",
+          "files": {
+            ".agents/skills/implement-plan/SKILL.md": "1.0.0",
+            ".agents/skills/research/SKILL.md": "1.0.0",
+            ".agents/skills/commit-research/SKILL.md": "1.0.0",
+            ".agents/skills/git-worktrees/SKILL.md": "1.0.0",
+            ".agents/git-worktrees/README.md": "1.0.0",
+            ".agents/research/README.md": "1.0.0"
+          }
+        }
+      }
+    },
+    "backend": {
+      "description": "Backend service development workflow",
+      "version": "1.0.0",
+      "stages": {
+        "product-mvp": {
+          "description": "Product requirements and MVP definition",
+          "version": "1.0.0",
+          "files": {
+            "AGENTS.md": "1.0.0",
+            ".agents/skills/bootstrap/SKILL.md": "1.0.0",
+            ".agents/skills/create-brd/SKILL.md": "1.0.0",
+            ".agents/specs/product.md": "1.0.0",
+            ".agents/specs/system.md": "1.0.0",
+            ".agents/specs/README.md": "1.0.0",
+            ".agents/specs/spec-index.json": "1.0.0"
+          }
+        },
+        "ux": {
+          "description": "API design and data modeling",
+          "version": "1.0.0",
+          "files": {
+            ".agents/skills/create-ux-specs/SKILL.md": "1.0.0",
+            ".agents/skills/design-db/SKILL.md": "1.0.0"
+          }
+        },
+        "plan": {
+          "description": "Task planning and breakdown",
+          "version": "1.0.0",
+          "files": {
+            ".agents/skills/create-plan/SKILL.md": "1.0.0",
+            ".agents/plans/README.md": "1.0.0"
+          }
+        },
+        "implement": {
+          "description": "Implementation, research, and version control",
+          "version": "1.0.0",
+          "files": {
+            ".agents/skills/implement-plan/SKILL.md": "1.0.0",
+            ".agents/skills/research/SKILL.md": "1.0.0",
+            ".agents/skills/commit-research/SKILL.md": "1.0.0",
+            ".agents/skills/git-worktrees/SKILL.md": "1.0.0",
+            ".agents/git-worktrees/README.md": "1.0.0",
+            ".agents/research/README.md": "1.0.0"
+          }
+        }
+      }
+    }
   }
 }
