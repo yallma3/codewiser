@@ -205,6 +205,16 @@ if ($remoteManifestObj.workflows) {
         }
     }
 
+    # Build deduplicated skill directories from selected workflows
+    $skillDirs = @()
+    foreach ($wf in $selectedNames) {
+        switch ($wf) {
+            "frontend" { $skillDirs += @("shared", "frontend") }
+            "backend"  { $skillDirs += @("shared", "backend") }
+        }
+    }
+    $skillDirs = $skillDirs | Select-Object -Unique
+
     Write-Host ""
     Write-Host "📥 Checking for framework updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
@@ -218,6 +228,7 @@ if ($remoteManifestObj.workflows) {
     foreach ($entry in $remoteManifestObj.files.PSObject.Properties) {
         $remoteFiles[$entry.Name] = $entry.Value
     }
+    $skillDirs = @()
 } else {
     Write-Host "  ⚠ Unknown manifest format. Aborting."
     Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
@@ -262,7 +273,17 @@ Download -Url "$RAW_BASE/manifest.json" -Dest $localManifestPath | Out-Null
 # --- 4. Generate supplementary explicit configurations ---
 if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
     Write-Host "📄 Creating opencode.json..."
-    @"
+    if ($skillDirs.Count -gt 0) {
+        $config = @{
+            '$schema' = 'https://opencode.ai/config.json'
+            skills = @{
+                paths = @($skillDirs | ForEach-Object { ".agents/skills/$_" })
+            }
+            instructions = @(($skillDirs | ForEach-Object { ".agents/skills/$_/**/SKILL.md" }) + "AGENTS.md")
+        }
+        $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\opencode.json"
+    } else {
+        @"
 {
   "\$schema": "https://opencode.ai/config.json",
   "skills": {
@@ -276,6 +297,7 @@ if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
   ]
 }
 "@ | Set-Content "$TargetDir\opencode.json" -NoNewline
+    }
 }
 
 if ($use_claude -and -not (Test-Path "$TargetDir\CLAUDE.md")) {
@@ -308,12 +330,22 @@ if ($use_antigravity -and -not (Test-Path "$TargetDir\.antigravity\workflows.jso
 if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
     Write-Host "📄 Creating .kilo/config.json..."
     New-Item -ItemType Directory -Path "$TargetDir\.kilo" -Force | Out-Null
-    @"
+    if ($skillDirs.Count -gt 0) {
+        $instructions = @("AGENTS.md")
+        $instructions += $skillDirs | ForEach-Object { ".agents/skills/$_/**/SKILL.md" }
+        $config = @{
+            '$schema' = 'https://app.kilo.ai/config.json'
+            instructions = $instructions
+        }
+        $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\.kilo\config.json"
+    } else {
+        @"
 {
   "\$schema": "https://app.kilo.ai/config.json",
   "instructions": ["AGENTS.md", ".agents/skills/*/SKILL.md"]
 }
 "@ | Set-Content "$TargetDir\.kilo\config.json" -NoNewline
+    }
 }
 
 # --- 5. Create symbolic links ---
