@@ -30,11 +30,11 @@ while ($true) {
     }
     Write-Host "  [ ] d) Done"
     Write-Host "  [ ] c) Cancel"
-    $input = Read-Host "> "
+    $choice = Read-Host "> "
 
-    switch ($input) {
+    switch ($choice) {
         { $_ -in "1","2","3","4","5" } {
-            $idx = [int]$input - 1
+            $idx = [int]$choice - 1
             $selections[$idx] = -not $selections[$idx]
         }
         { $_ -in "d","D","" } {
@@ -60,20 +60,21 @@ $use_kilo     = $selections[4]
 # --- 1. Create directory structure ---
 Write-Host ""
 Write-Host ">> Creating folder architecture..."
-New-Item -ItemType Directory -Path "$TargetDir\.agents\skills" -Force | Out-Null
-New-Item -ItemType Directory -Path "$TargetDir\.agents\specs" -Force | Out-Null
-New-Item -ItemType Directory -Path "$TargetDir\.agents\plans" -Force | Out-Null
-New-Item -ItemType Directory -Path "$TargetDir\.agents\research" -Force | Out-Null
+mkdir "$TargetDir\.agents" -Force | Out-Null
+mkdir "$TargetDir\.agents\skills" -Force | Out-Null
+mkdir "$TargetDir\.agents\specs" -Force | Out-Null
+mkdir "$TargetDir\.agents\plans" -Force | Out-Null
+mkdir "$TargetDir\.agents\research" -Force | Out-Null
 
-if ($use_claude) { New-Item -ItemType Directory -Path "$TargetDir\.claude" -Force | Out-Null }
-if ($use_cursor) { New-Item -ItemType Directory -Path "$TargetDir\.cursor" -Force | Out-Null }
-if ($use_antigravity) { New-Item -ItemType Directory -Path "$TargetDir\.antigravity" -Force | Out-Null }
-if ($use_kilo) { New-Item -ItemType Directory -Path "$TargetDir\.kilo" -Force | Out-Null }
+if ($use_claude) { mkdir "$TargetDir\.claude" -Force | Out-Null }
+if ($use_cursor) { mkdir "$TargetDir\.cursor" -Force | Out-Null }
+if ($use_antigravity) { mkdir "$TargetDir\.antigravity" -Force | Out-Null }
+if ($use_kilo) { mkdir "$TargetDir\.kilo" -Force | Out-Null }
 
 # --- Helper: download a file ---
 function Download {
     param([string]$Url, [string]$Dest)
-    New-Item -ItemType Directory -Path (Split-Path $Dest -Parent) -Force | Out-Null
+    mkdir (Split-Path $Dest -Parent) -Force | Out-Null
     try {
         Invoke-WebRequest -Uri $Url -OutFile $Dest -ErrorAction Stop | Out-Null
         return $true
@@ -172,11 +173,11 @@ if ($remoteManifestObj.workflows) {
         }
         Write-Host "  [ ] d) Done"
         Write-Host "  [ ] c) Cancel"
-        $input = Read-Host "> "
+        $choice = Read-Host "> "
 
-        switch ($input) {
+        switch ($choice) {
             { $_ -in "1".."9" } {
-                $idx = [int]$input - 1
+                $idx = [int]$choice - 1
                 if ($idx -ge $wfNames.Count) {
                     Write-Host "  Invalid choice."
                     continue
@@ -249,7 +250,7 @@ foreach ($entry in $remoteFiles.GetEnumerator()) {
     if (-not $localVer) { $localVer = "0.0.0" }
 
     if (-not (Test-Path $dest)) {
-        New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
+        mkdir (Split-Path $dest -Parent) -Force | Out-Null
         Write-Host "  >> $path (new)"
         $ok = Download -Url $url -Dest $dest
         if (-not $ok) { Write-Host "  !! Failed to download $path" }
@@ -310,7 +311,7 @@ if ($use_claude -and -not (Test-Path "$TargetDir\CLAUDE.md")) {
 
 if ($use_antigravity -and -not (Test-Path "$TargetDir\.antigravity\workflows.json")) {
     Write-Host ">> Creating .antigravity/workflows.json..."
-    New-Item -ItemType Directory -Path "$TargetDir\.antigravity" -Force | Out-Null
+    mkdir "$TargetDir\.antigravity" -Force | Out-Null
     $config = @{
         workflows = @(
             @{
@@ -324,7 +325,7 @@ if ($use_antigravity -and -not (Test-Path "$TargetDir\.antigravity\workflows.jso
 
 if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
     Write-Host ">> Creating .kilo/config.json..."
-    New-Item -ItemType Directory -Path "$TargetDir\.kilo" -Force | Out-Null
+    mkdir "$TargetDir\.kilo" -Force | Out-Null
     if ($skillDirs.Count -gt 0) {
         $instructions = @("AGENTS.md")
         $instructions += $skillDirs | ForEach-Object { ".agents/skills/$_/**/SKILL.md" }
