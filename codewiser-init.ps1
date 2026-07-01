@@ -5,8 +5,10 @@ param(
 
 $RAW_BASE = "https://raw.githubusercontent.com/yallma3/codewiser/main"
 
-$TargetDir = Resolve-Path $TargetDir -ErrorAction SilentlyContinue
-if (-not $TargetDir) {
+$resolvedDir = Resolve-Path $TargetDir -ErrorAction SilentlyContinue
+if ($resolvedDir) {
+    $TargetDir = $resolvedDir
+} else {
     $TargetDir = [System.IO.Path]::GetFullPath($TargetDir)
 }
 New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
