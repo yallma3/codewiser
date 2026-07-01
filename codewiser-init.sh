@@ -242,6 +242,41 @@ for wf in d.get('workflows', {}):
     echo "📥 Checking for framework updates..."
     echo "  Workflows: ${WF_SELECTED_NAMES[*]}"
 
+    # Display skills organized by category
+    python3 -c "
+import json
+with open('$REMOTE_MANIFEST') as f:
+    d = json.load(f)
+wfs = list(d.get('workflows', {}))
+selected = [${SELECTED_WF_INDICES_JOINED}]
+selected_names = [wfs[i] for i in selected]
+wf_files = {}
+for name in wfs:
+    wf_files[name] = set()
+    for stage in d['workflows'][name].get('stages', {}).values():
+        for fpath in stage.get('files', {}):
+            wf_files[name].add(fpath)
+shared_files = set.intersection(*(wf_files[n] for n in selected_names)) if selected_names else set()
+essential = set()
+for f in shared_files:
+    if '/shared/' in f and f.endswith('/SKILL.md'):
+        essential.add(f.split('/shared/')[1].split('/')[0])
+if essential:
+    print('  Essential Skills:')
+    for s in sorted(essential):
+        print(f'    - {s}')
+for name in selected_names:
+    unique = set()
+    for f in wf_files[name]:
+        prefix = '/' + name + '/'
+        if prefix in f and f.endswith('/SKILL.md'):
+            unique.add(f.split(prefix)[1].split('/')[0])
+    if unique:
+        print(f'  {name}:')
+        for s in sorted(unique):
+            print(f'    - {s}')
+" 2>/dev/null || true
+
     # Extract paths and versions as pipe-delimited lines
     RAW_FILE_LIST=$(json_parse "$REMOTE_MANIFEST" "
 wfs = list(d.get('workflows', {}))

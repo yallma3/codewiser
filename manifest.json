@@ -1,7 +1,7 @@
 {
   "$schema": "manifest.json",
   "description": "Version manifest for downloadable framework artifacts. Organized by workflows and stages. Used by codewiser-init.sh to detect and prompt for updates.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "workflows": {
     "frontend": {
       "description": "Frontend feature development workflow",
