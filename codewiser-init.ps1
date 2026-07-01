@@ -22,11 +22,11 @@ $selections = @($false, $false, $false, $false, $false)
 Write-Host ""
 Write-Host "Select AI agents (enter number to toggle, 'd' when done):"
 
-while ($true) {
+:agentLoop while ($true) {
     for ($i = 0; $i -lt $choices.Length; $i++) {
         $mark = " "
         if ($selections[$i]) { $mark = "x" }
-        Write-Host "  [$mark] $($i+1))) $($choices[$i])"
+        Write-Host "  [$mark] $($i+1)) $($choices[$i])"
     }
     Write-Host "  [ ] d) Done"
     Write-Host "  [ ] c) Cancel"
@@ -44,7 +44,7 @@ while ($true) {
                 Write-Host "No agents selected. Cancelled."
                 exit 0
             }
-            break
+            break :agentLoop
         }
         { $_ -in "c","C" } { Write-Host "Cancelled."; exit 0 }
         default { Write-Host "  Invalid choice." }
@@ -165,11 +165,11 @@ if ($remoteManifestObj.workflows) {
     Write-Host ""
     Write-Host "Select workflows to install (enter number to toggle, 'd' when done):"
 
-    while ($true) {
+    :wfLoop while ($true) {
         for ($i = 0; $i -lt $wfNames.Count; $i++) {
             $mark = " "
             if ($wfSelections[$i]) { $mark = "x" }
-            Write-Host "  [$mark] $($i+1))) $($wfNames[$i])"
+            Write-Host "  [$mark] $($i+1)) $($wfNames[$i])"
         }
         Write-Host "  [ ] d) Done"
         Write-Host "  [ ] c) Cancel"
@@ -191,7 +191,7 @@ if ($remoteManifestObj.workflows) {
                     Write-Host "  !! No workflows selected."
                     continue
                 }
-                break
+                break :wfLoop
             }
             { $_ -in "c","C" } { Write-Host "Cancelled."; Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue; exit 0 }
             default { Write-Host "  Invalid choice." }
@@ -208,19 +208,50 @@ if ($remoteManifestObj.workflows) {
         }
     }
 
-    # Build deduplicated skill directories from selected workflows
-    $skillDirs = @()
+    # Build skill directories: essential (shared) first, then workflow-specific
+    $skillDirs = @("shared")
     foreach ($wf in $selectedNames) {
         switch ($wf) {
-            "frontend" { $skillDirs += @("shared", "frontend") }
-            "backend"  { $skillDirs += @("shared", "backend") }
+            "frontend" { $skillDirs += "frontend" }
+            "backend"  { $skillDirs += "backend" }
         }
     }
-    $skillDirs = $skillDirs | Select-Object -Unique
 
     Write-Host ""
     Write-Host ">> Checking for framework updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
+
+    # Display skills organized by category
+    $allFiles = @{}
+    foreach ($wfName in $remoteManifestObj.workflows.PSObject.Properties.Name) {
+        $wf = $remoteManifestObj.workflows.$wfName
+        $wfFiles = @()
+        foreach ($stage in $wf.stages.PSObject.Properties.Value) {
+            foreach ($entry in $stage.files.PSObject.Properties) {
+                $wfFiles += $entry.Name
+            }
+        }
+        $allFiles[$wfName] = $wfFiles
+    }
+    # Intersection of all selected workflows' files
+    $sharedFiles = @($allFiles[$selectedNames[0]])
+    for ($i = 1; $i -lt $selectedNames.Count; $i++) {
+        $wfFiles = $allFiles[$selectedNames[$i]]
+        $sharedFiles = @($sharedFiles | Where-Object { $wfFiles -contains $_ })
+    }
+    $essential = $sharedFiles | Where-Object { $_ -like '*/shared/*/SKILL.md' } | ForEach-Object { $_.Split('/shared/')[1].Split('/')[0] } | Sort-Object -Unique
+    if ($essential) {
+        Write-Host "  Essential Skills:"
+        foreach ($s in $essential) { Write-Host "    - $s" }
+    }
+    foreach ($name in $selectedNames) {
+        $prefix = "/$name/"
+        $unique = $allFiles[$name] | Where-Object { $_ -like "*$prefix*/SKILL.md" } | ForEach-Object { $_.Split($prefix)[1].Split('/')[0] } | Sort-Object -Unique
+        if ($unique) {
+            Write-Host "  $($name):"
+            foreach ($s in $unique) { Write-Host "    - $s" }
+        }
+    }
 
     $remoteFiles = Flatten-WorkflowFiles -ManifestObj $remoteManifestObj -SelectedIndices $selectedIndices
 } elseif ($remoteManifestObj.files) {
