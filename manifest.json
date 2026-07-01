@@ -17,7 +17,8 @@
             ".agents/specs/product.md": "1.0.0",
             ".agents/specs/system.md": "1.0.0",
             ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0"
+            ".agents/specs/spec-index.json": "1.0.0",
+            ".agents/scripts/skills-category.sh": "1.0.0"
           }
         },
         "ux": {
@@ -63,7 +64,8 @@
             ".agents/specs/product.md": "1.0.0",
             ".agents/specs/system.md": "1.0.0",
             ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0"
+            ".agents/specs/spec-index.json": "1.0.0",
+            ".agents/scripts/skills-category.sh": "1.0.0"
           }
         },
         "ux": {
