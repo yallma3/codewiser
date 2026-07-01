@@ -207,19 +207,15 @@ for wf in d.get('workflows', {}):
         fi
     done
 
-    # Build deduplicated skill directories from selected workflows
-    SKILL_DIRS=()
+    # Build skill directories: essential (shared) first, then workflow-specific
+    SKILL_DIRS=("shared")
     for wf in "${WF_SELECTED_NAMES[@]}"; do
         case "$wf" in
-            frontend) SKILL_DIRS+=("shared" "frontend") ;;
-            backend)  SKILL_DIRS+=("shared" "backend") ;;
+            frontend) SKILL_DIRS+=("frontend") ;;
+            backend)  SKILL_DIRS+=("backend") ;;
         esac
     done
-    declare -A _seen_sd
-    SKILL_DIRS_DEDUP=()
-    for dir in "${SKILL_DIRS[@]}"; do
-        [[ -z "${_seen_sd[$dir]}" ]] && SKILL_DIRS_DEDUP+=("$dir") && _seen_sd[$dir]=1
-    done
+    SKILL_DIRS_DEDUP=("${SKILL_DIRS[@]}")
 
     # Generate Python list string for skill directories
     SKILL_DIRS_PYTHON="["
