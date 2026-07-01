@@ -86,6 +86,7 @@ while true; do
     echo "  [ ] d) Done"
     echo "  [ ] c) Cancel"
     read -p "> " input
+    input=${input//$'\r'}
 
     case "$input" in
         [1-5])
@@ -174,6 +175,7 @@ for wf in d.get('workflows', {}):
         echo "  [ ] d) Done"
         echo "  [ ] c) Cancel"
         read -p "> " input
+        input=${input//$'\r'}
 
         case "$input" in
             [1-9]*)
