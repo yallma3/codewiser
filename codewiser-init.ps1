@@ -11,7 +11,7 @@ if (-not $TargetDir) {
 }
 New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
 
-Write-Host "🚀 Initializing Multi-Agent Skills Framework in $TargetDir..."
+Write-Host ">> Initializing Multi-Agent Skills Framework in $TargetDir..."
 
 # --- Agent Selection (checkbox-style) ---
 $choices = @("OpenCode / MiMo / Crush", "Claude Code", "Cursor", "Antigravity", "Kilo Code")
@@ -57,7 +57,7 @@ $use_kilo     = $selections[4]
 
 # --- 1. Create directory structure ---
 Write-Host ""
-Write-Host "📁 Creating folder architecture..."
+Write-Host ">> Creating folder architecture..."
 New-Item -ItemType Directory -Path "$TargetDir\.agents\skills" -Force | Out-Null
 New-Item -ItemType Directory -Path "$TargetDir\.agents\specs" -Force | Out-Null
 New-Item -ItemType Directory -Path "$TargetDir\.agents\plans" -Force | Out-Null
@@ -133,14 +133,14 @@ function Flatten-WorkflowFiles {
 
 # --- 2. Download remote manifest ---
 Write-Host ""
-Write-Host "📥 Fetching available workflows..."
+Write-Host ">> Fetching available workflows..."
 
 $localManifestPath = "$TargetDir\.agents\manifest.json"
 $remoteManifest = New-TemporaryFile
 
 $manifestOk = Download -Url "$RAW_BASE/manifest.json" -Dest $remoteManifest.FullName
 if (-not $manifestOk) {
-    Write-Host "  ⚠ Failed to download remote manifest. Aborting."
+    Write-Host "  !! Failed to download remote manifest. Aborting."
     Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
     exit 1
 }
@@ -185,7 +185,7 @@ if ($remoteManifestObj.workflows) {
                 $any = $false
                 foreach ($s in $wfSelections) { if ($s) { $any = $true; break } }
                 if (-not $any) {
-                    Write-Host "  ⚠ No workflows selected."
+                    Write-Host "  !! No workflows selected."
                     continue
                 }
                 break
@@ -216,21 +216,21 @@ if ($remoteManifestObj.workflows) {
     $skillDirs = $skillDirs | Select-Object -Unique
 
     Write-Host ""
-    Write-Host "📥 Checking for framework updates..."
+    Write-Host ">> Checking for framework updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
 
     $remoteFiles = Flatten-WorkflowFiles -ManifestObj $remoteManifestObj -SelectedIndices $selectedIndices
 } elseif ($remoteManifestObj.files) {
     # --- Backward compatibility: flat files structure (v1.x) ---
     Write-Host ""
-    Write-Host "📥 Checking for framework updates..."
+    Write-Host ">> Checking for framework updates..."
 
     foreach ($entry in $remoteManifestObj.files.PSObject.Properties) {
         $remoteFiles[$entry.Name] = $entry.Value
     }
     $skillDirs = @()
 } else {
-    Write-Host "  ⚠ Unknown manifest format. Aborting."
+    Write-Host "  !! Unknown manifest format. Aborting."
     Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
     exit 1
 }
@@ -248,20 +248,20 @@ foreach ($entry in $remoteFiles.GetEnumerator()) {
 
     if (-not (Test-Path $dest)) {
         New-Item -ItemType Directory -Path (Split-Path $dest -Parent) -Force | Out-Null
-        Write-Host "  📄 $path (new)"
+        Write-Host "  >> $path (new)"
         $ok = Download -Url $url -Dest $dest
-        if (-not $ok) { Write-Host "  ⚠ Failed to download $path" }
+        if (-not $ok) { Write-Host "  !! Failed to download $path" }
     } elseif (Version-Lt $localVer $remoteVer) {
-        Write-Host "  📄 $path ($localVer → $remoteVer)"
+        Write-Host "  >> $path ($localVer -> $remoteVer)"
         $answer = Read-Host "    Overwrite? [y/N]"
         if ($answer -eq "y" -or $answer -eq "Y") {
             $ok = Download -Url $url -Dest $dest
-            if (-not $ok) { Write-Host "  ⚠ Failed to download $path" }
+            if (-not $ok) { Write-Host "  !! Failed to download $path" }
         } else {
             Write-Host "    Skipped."
         }
     } else {
-        Write-Host "  ✓ $path (up to date)"
+        Write-Host "  OK $path (up to date)"
     }
 }
 
@@ -272,7 +272,7 @@ Download -Url "$RAW_BASE/manifest.json" -Dest $localManifestPath | Out-Null
 
 # --- 4. Generate supplementary explicit configurations ---
 if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
-    Write-Host "📄 Creating opencode.json..."
+    Write-Host ">> Creating opencode.json..."
     if ($skillDirs.Count -gt 0) {
         $config = @{
             '$schema' = 'https://opencode.ai/config.json'
@@ -295,7 +295,7 @@ if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
 }
 
 if ($use_claude -and -not (Test-Path "$TargetDir\CLAUDE.md")) {
-    Write-Host "📄 Creating CLAUDE.md..."
+    Write-Host ">> Creating CLAUDE.md..."
     @'
 # Claude Code Settings
 
@@ -307,7 +307,7 @@ if ($use_claude -and -not (Test-Path "$TargetDir\CLAUDE.md")) {
 }
 
 if ($use_antigravity -and -not (Test-Path "$TargetDir\.antigravity\workflows.json")) {
-    Write-Host "📄 Creating .antigravity/workflows.json..."
+    Write-Host ">> Creating .antigravity/workflows.json..."
     New-Item -ItemType Directory -Path "$TargetDir\.antigravity" -Force | Out-Null
     $config = @{
         workflows = @(
@@ -321,7 +321,7 @@ if ($use_antigravity -and -not (Test-Path "$TargetDir\.antigravity\workflows.jso
 }
 
 if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
-    Write-Host "📄 Creating .kilo/config.json..."
+    Write-Host ">> Creating .kilo/config.json..."
     New-Item -ItemType Directory -Path "$TargetDir\.kilo" -Force | Out-Null
     if ($skillDirs.Count -gt 0) {
         $instructions = @("AGENTS.md")
@@ -342,14 +342,14 @@ if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
 
 # --- 5. Create symbolic links ---
 Write-Host ""
-Write-Host "🔗 Generating symbolic links..."
+Write-Host ">> Generating symbolic links..."
 
 function Migrate-And-Symlink {
     param([string]$Src, [string]$Dest, [string]$Label)
     $srcPath = "$TargetDir\$Src"
 
     if ((Test-Path $srcPath) -and -not (Get-Item $srcPath).Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
-        Write-Host "  ↳ Migrating existing $Label assets into .agents..."
+        Write-Host "   -> Migrating existing $Label assets into .agents..."
         Get-ChildItem "$srcPath\*" -ErrorAction SilentlyContinue | Copy-Item -Destination "$TargetDir\.agents\skills\" -Recurse -Force -ErrorAction SilentlyContinue
         Remove-Item $srcPath -Recurse -Force -ErrorAction SilentlyContinue
     }
@@ -359,16 +359,16 @@ function Migrate-And-Symlink {
     }
 
     New-Item -ItemType SymbolicLink -Path $srcPath -Target $Dest -Force | Out-Null
-    Write-Host "  ↳ Linked $srcPath -> $Dest"
+    Write-Host "   -> Linked $srcPath -> $Dest"
 }
 
 if ($use_claude) { Migrate-And-Symlink -Src ".claude\skills" -Dest "..\.agents\skills" -Label "Claude Code" }
 if ($use_cursor) { Migrate-And-Symlink -Src ".cursor\skills" -Dest "..\.agents\skills" -Label "Cursor" }
 
 Write-Host ""
-Write-Host "📎 Symbolic links created:"
-if ($use_claude) { Write-Host "  - $TargetDir\.claude\skills → ..\.agents\skills" }
-if ($use_cursor) { Write-Host "  - $TargetDir\.cursor\skills → ..\.agents\skills" }
+Write-Host ">> Symbolic links created:"
+if ($use_claude) { Write-Host "  - $TargetDir\.claude\skills -> ..\.agents\skills" }
+if ($use_cursor) { Write-Host "  - $TargetDir\.cursor\skills -> ..\.agents\skills" }
 
 Write-Host ""
-Write-Host "✅ Setup complete! Target: $TargetDir"
+Write-Host "** Setup complete! Target: $TargetDir"
