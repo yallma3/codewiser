@@ -283,48 +283,41 @@ if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {
         }
         $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\opencode.json"
     } else {
-        @"
-{
-  "\$schema": "https://opencode.ai/config.json",
-  "skills": {
-    "paths": [
-      ".agents/skills"
-    ]
-  },
-  "instructions": [
-    ".agents/skills/**/SKILL.md",
-    "AGENTS.md"
-  ]
-}
-"@ | Set-Content "$TargetDir\opencode.json" -NoNewline
+        $config = @{
+            '$schema' = 'https://opencode.ai/config.json'
+            skills = @{
+                paths = @(".agents/skills")
+            }
+            instructions = @(".agents/skills/**/SKILL.md", "AGENTS.md")
+        }
+        $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\opencode.json"
     }
 }
 
 if ($use_claude -and -not (Test-Path "$TargetDir\CLAUDE.md")) {
     Write-Host "📄 Creating CLAUDE.md..."
-    @"
+    @'
 # Claude Code Settings
 
 @AGENTS.md
 
 ## Claude-Specific Instructions
 - Utilize the symlinked skills located in `.claude/skills/` when triggered.
-"@ | Set-Content "$TargetDir\CLAUDE.md" -NoNewline
+'@ | Set-Content "$TargetDir\CLAUDE.md" -NoNewline
 }
 
 if ($use_antigravity -and -not (Test-Path "$TargetDir\.antigravity\workflows.json")) {
     Write-Host "📄 Creating .antigravity/workflows.json..."
     New-Item -ItemType Directory -Path "$TargetDir\.antigravity" -Force | Out-Null
-    @"
-{
-  "workflows": [
-    {
-      "name": "example",
-      "description": "Example workflow referencing shared .agents/skills"
+    $config = @{
+        workflows = @(
+            @{
+                name = "example"
+                description = "Example workflow referencing shared .agents/skills"
+            }
+        )
     }
-  ]
-}
-"@ | Set-Content "$TargetDir\.antigravity\workflows.json" -NoNewline
+    $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\.antigravity\workflows.json"
 }
 
 if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
@@ -339,12 +332,11 @@ if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
         }
         $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\.kilo\config.json"
     } else {
-        @"
-{
-  "\$schema": "https://app.kilo.ai/config.json",
-  "instructions": ["AGENTS.md", ".agents/skills/*/SKILL.md"]
-}
-"@ | Set-Content "$TargetDir\.kilo\config.json" -NoNewline
+        $config = @{
+            '$schema' = 'https://app.kilo.ai/config.json'
+            instructions = @("AGENTS.md", ".agents/skills/*/SKILL.md")
+        }
+        $config | ConvertTo-Json -Depth 3 | Set-Content "$TargetDir\.kilo\config.json"
     }
 }
 
