@@ -3,6 +3,22 @@ param(
     [string]$TargetDir
 )
 
+<#
+.SYNOPSIS
+    Initializes the codewiser multi-agent framework in a target directory.
+.DESCRIPTION
+    Downloads shared skills, specs, and creates agent-specific configs
+    (OpenCode, Claude Code, Cursor, Antigravity, Kilo Code).
+    Requires PowerShell 5+ and Git.
+.NOTES
+    If you see "running scripts is disabled", run:
+      Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+    If symlinks fail, enable Developer Mode or run as Administrator.
+#>
+
+# Enable TLS 1.2 for GitHub downloads (disabled by default on many Windows builds)
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 $RAW_BASE = "https://raw.githubusercontent.com/yallma3/codewiser/main"
 
 $resolvedDir = Resolve-Path $TargetDir -ErrorAction SilentlyContinue
@@ -26,7 +42,7 @@ Write-Host "Select AI agents (enter number to toggle, 'd' when done):"
     for ($i = 0; $i -lt $choices.Length; $i++) {
         $mark = " "
         if ($selections[$i]) { $mark = "x" }
-        Write-Host "  [$mark] $($i+1)) $($choices[$i])"
+        Write-Host "  [$mark] $($i+1). $($choices[$i])"
     }
     Write-Host "  [ ] d) Done"
     Write-Host "  [ ] c) Cancel"
@@ -169,14 +185,14 @@ if ($remoteManifestObj.workflows) {
         for ($i = 0; $i -lt $wfNames.Count; $i++) {
             $mark = " "
             if ($wfSelections[$i]) { $mark = "x" }
-            Write-Host "  [$mark] $($i+1)) $($wfNames[$i])"
+            Write-Host "  [$mark] $($i+1). $($wfNames[$i])"
         }
         Write-Host "  [ ] d) Done"
         Write-Host "  [ ] c) Cancel"
         $choice = Read-Host "> "
 
         switch ($choice) {
-            { $_ -in "1".."9" } {
+            { $_ -match '^\d+$' } {
                 $idx = [int]$choice - 1
                 if ($idx -ge $wfNames.Count) {
                     Write-Host "  Invalid choice."
@@ -239,14 +255,14 @@ if ($remoteManifestObj.workflows) {
         $wfFiles = $allFiles[$selectedNames[$i]]
         $sharedFiles = @($sharedFiles | Where-Object { $wfFiles -contains $_ })
     }
-    $essential = $sharedFiles | Where-Object { $_ -like '*/shared/*/SKILL.md' } | ForEach-Object { $_.Split('/shared/')[1].Split('/')[0] } | Sort-Object -Unique
+    $essential = $sharedFiles | Where-Object { $_ -like '*/shared/*/SKILL.md' } | ForEach-Object { ($_ -split '/shared/')[1].Split('/')[0] } | Sort-Object -Unique
     if ($essential) {
         Write-Host "  Essential Skills:"
         foreach ($s in $essential) { Write-Host "    - $s" }
     }
     foreach ($name in $selectedNames) {
         $prefix = "/$name/"
-        $unique = $allFiles[$name] | Where-Object { $_ -like "*$prefix*/SKILL.md" } | ForEach-Object { $_.Split($prefix)[1].Split('/')[0] } | Sort-Object -Unique
+        $unique = $allFiles[$name] | Where-Object { $_ -like "*$prefix*/SKILL.md" } | ForEach-Object { ($_ -split $prefix)[1].Split('/')[0] } | Sort-Object -Unique
         if ($unique) {
             Write-Host "  $($name):"
             foreach ($s in $unique) { Write-Host "    - $s" }
@@ -274,7 +290,8 @@ foreach ($entry in $remoteFiles.GetEnumerator()) {
     $path = $entry.Key
     $remoteVer = $entry.Value
 
-    $dest = "$TargetDir\$path"
+    $localPath = $path.Replace('/', '\')
+    $dest = "$TargetDir\$localPath"
     $url = "$RAW_BASE/$path"
 
     $localVer = Get-ManifestVersion -ManifestPath $localManifestPath -FilePath $path
@@ -381,6 +398,7 @@ Write-Host ">> Generating symbolic links..."
 function Migrate-And-Symlink {
     param([string]$Src, [string]$Dest, [string]$Label)
     $srcPath = "$TargetDir\$Src"
+    $destAbs = "$TargetDir\.agents\skills"
 
     if ((Test-Path $srcPath) -and -not (Get-Item $srcPath).Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
         Write-Host "   -> Migrating existing $Label assets into .agents..."
@@ -392,8 +410,31 @@ function Migrate-And-Symlink {
         Remove-Item $srcPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    New-Item -ItemType SymbolicLink -Path $srcPath -Target $Dest -Force | Out-Null
-    Write-Host "   -> Linked $srcPath -> $Dest"
+    try {
+        New-Item -ItemType SymbolicLink -Path $srcPath -Target $Dest -Force -ErrorAction Stop | Out-Null
+        Write-Host "   -> Linked $srcPath -> $Dest"
+    } catch {
+        Write-Host "   !! Failed to create symlink: $srcPath -> $Dest"
+        Write-Host "   !! Windows requires Administrator privileges or Developer Mode for symlinks."
+        Write-Host "   !! See: https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development"
+        $answer = Read-Host "   Retry as admin? [y/N]"
+        if ($answer -eq "y" -or $answer -eq "Y") {
+            $psi = New-Object System.Diagnostics.ProcessStartInfo
+            $psi.FileName = "powershell.exe"
+            $psi.Verb = "runas"
+            $psi.Arguments = "-NoProfile -Command `"New-Item -ItemType SymbolicLink -Path '$srcPath' -Target '$Dest' -Force`""
+            try {
+                [System.Diagnostics.Process]::Start($psi) | Out-Null
+                Write-Host "   -> Admin elevation requested for symlink creation."
+            } catch {
+                Write-Host "   !! Admin elevation failed. Falling back to copy instead of symlink."
+                Copy-Item -Path "$destAbs\*" -Destination $srcPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            Write-Host "   !! Falling back to copy instead of symlink."
+            Copy-Item -Path "$destAbs\*" -Destination $srcPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 if ($use_claude) { Migrate-And-Symlink -Src ".claude\skills" -Dest "..\.agents\skills" -Label "Claude Code" }
