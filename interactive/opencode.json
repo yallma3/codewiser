@@ -2,11 +2,13 @@
   "$schema": "https://opencode.ai/config.json",
   "skills": {
     "paths": [
-      ".agents/skills"
+      ".agents/skills/shared",
+      ".agents/skills/frontend"
     ]
   },
   "instructions": [
-    ".agents/skills/**/SKILL.md",
+    ".agents/skills/shared/**/SKILL.md",
+    ".agents/skills/frontend/**/SKILL.md",
     "AGENTS.md"
   ]
 }
