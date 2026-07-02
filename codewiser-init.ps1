@@ -38,7 +38,8 @@ $selections = @($false, $false, $false, $false, $false)
 Write-Host ""
 Write-Host "Select AI agents (enter number to toggle, 'd' when done):"
 
-:agentLoop while ($true) {
+$agentDone = $false
+while (-not $agentDone) {
     for ($i = 0; $i -lt $choices.Length; $i++) {
         $mark = " "
         if ($selections[$i]) { $mark = "x" }
@@ -60,7 +61,8 @@ Write-Host "Select AI agents (enter number to toggle, 'd' when done):"
                 Write-Host "No agents selected. Cancelled."
                 exit 0
             }
-            break :agentLoop
+            $agentDone = $true
+            break
         }
         { $_ -in "c","C" } { Write-Host "Cancelled."; exit 0 }
         default { Write-Host "  Invalid choice." }
@@ -181,7 +183,8 @@ if ($remoteManifestObj.workflows) {
     Write-Host ""
     Write-Host "Select workflows to install (enter number to toggle, 'd' when done):"
 
-    :wfLoop while ($true) {
+    $wfDone = $false
+    while (-not $wfDone) {
         for ($i = 0; $i -lt $wfNames.Count; $i++) {
             $mark = " "
             if ($wfSelections[$i]) { $mark = "x" }
@@ -196,7 +199,7 @@ if ($remoteManifestObj.workflows) {
                 $idx = [int]$choice - 1
                 if ($idx -ge $wfNames.Count) {
                     Write-Host "  Invalid choice."
-                    continue
+                    break
                 }
                 $wfSelections[$idx] = -not $wfSelections[$idx]
             }
@@ -205,9 +208,10 @@ if ($remoteManifestObj.workflows) {
                 foreach ($s in $wfSelections) { if ($s) { $any = $true; break } }
                 if (-not $any) {
                     Write-Host "  !! No workflows selected."
-                    continue
+                    break
                 }
-                break :wfLoop
+                $wfDone = $true
+                break
             }
             { $_ -in "c","C" } { Write-Host "Cancelled."; Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue; exit 0 }
             default { Write-Host "  Invalid choice." }
