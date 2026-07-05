@@ -108,6 +108,17 @@ Document the chosen approach and the rationale:
 - **Update on reversal** — if a decision is later reversed, create a new research document superseding the old one. Don't modify historical records.
 - **Keep research read-only after acceptance** — once a decision is made and implementation starts, the research document is a historical record. Do not edit it to reflect new decisions; create a new document instead.
 
+## Workflow Integration
+
+```
+design-thinking ──> analyze ──> commit-design
+(generate options)   (document ADR)   (record decision)
+```
+
+1. **design-thinking** — generate solution options (Option A, B, C...) using design thinking methodology
+2. **analyze** (this skill) — produce the full ADR with current architecture, alternatives, and the user's selected option
+3. **commit-design** — record the decision in git and update spec files
+
 ## File Naming Conventions
 
 - Research: `research_YYMMDD_<topic>.md` → `.agents/research/`
