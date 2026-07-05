@@ -1,5 +1,5 @@
 ---
-name: research
+name: analyze
 description: Guidelines for producing architectural decision records (ADRs). Use when investigating a new feature, bug fix, or refactor to document context, alternatives, and the selected approach.
 license: MIT
 ---

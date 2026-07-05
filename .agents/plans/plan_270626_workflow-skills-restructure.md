@@ -17,7 +17,7 @@ All skills live flat under `.agents/skills/`. Both workflows in `manifest.json` 
 - **Gate**: `ls .agents/skills/*/`
 - **Steps**:
   - Create `shared/`, `frontend/`, `backend/` dirs under `.agents/skills/`
-  - Move bootstrap, create-brd, create-plan, implement-plan, research, commit-research, git-worktrees → `shared/`
+  - Move bootstrap, create-brd, create-plan, implement-plan, analyze, commit-research, git-worktrees → `shared/`
   - Move create-ux-specs → `frontend/`
   - Move design-db → `backend/`
 - **Files affected**: All skills under `.agents/skills/`

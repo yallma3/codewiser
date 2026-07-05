@@ -17,8 +17,7 @@
             ".agents/specs/product.md": "1.0.0",
             ".agents/specs/system.md": "1.0.0",
             ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0",
-            ".agents/scripts/skills-category.sh": "1.0.0"
+            ".agents/specs/spec-index.json": "1.0.0"
           }
         },
         "ux": {
@@ -41,7 +40,7 @@
           "version": "1.0.0",
           "files": {
             ".agents/skills/shared/implement-plan/SKILL.md": "1.0.0",
-            ".agents/skills/shared/research/SKILL.md": "1.0.0",
+            ".agents/skills/shared/analyze/SKILL.md": "1.0.0",
             ".agents/skills/shared/commit-research/SKILL.md": "1.0.0",
             ".agents/skills/shared/git-worktrees/SKILL.md": "1.0.0",
             ".agents/git-worktrees/README.md": "1.0.0",
@@ -64,8 +63,7 @@
             ".agents/specs/product.md": "1.0.0",
             ".agents/specs/system.md": "1.0.0",
             ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0",
-            ".agents/scripts/skills-category.sh": "1.0.0"
+            ".agents/specs/spec-index.json": "1.0.0"
           }
         },
         "ux": {
@@ -88,7 +86,7 @@
           "version": "1.0.0",
           "files": {
             ".agents/skills/shared/implement-plan/SKILL.md": "1.0.0",
-            ".agents/skills/shared/research/SKILL.md": "1.0.0",
+            ".agents/skills/shared/analyze/SKILL.md": "1.0.0",
             ".agents/skills/shared/commit-research/SKILL.md": "1.0.0",
             ".agents/skills/shared/git-worktrees/SKILL.md": "1.0.0",
             ".agents/git-worktrees/README.md": "1.0.0",

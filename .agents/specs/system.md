@@ -4,7 +4,7 @@
 
 The codewiser framework uses a **workflow-scoped skills** architecture. Skills are organized into three directories under `.agents/skills/`:
 
-- **`shared/`** — Workflow-agnostic skills available to all workflows (bootstrap, create-brd, create-plan, implement-plan, research, commit-research, git-worktrees)
+- **`shared/`** — Workflow-agnostic skills available to all workflows (bootstrap, create-brd, create-plan, implement-plan, analyze, commit-research, git-worktrees)
 - **`frontend/`** — Frontend-only skills (create-ux-specs)
 - **`backend/`** — Backend-only skills (design-db)
 
