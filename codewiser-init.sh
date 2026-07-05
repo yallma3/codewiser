@@ -209,28 +209,9 @@ for wf in d.get('workflows', {}):
         fi
     done
 
-    # Build skill directories: essential (shared) first, then workflow-specific
-    SKILL_DIRS=("shared")
-    for wf in "${WF_SELECTED_NAMES[@]}"; do
-        case "$wf" in
-            frontend) SKILL_DIRS+=("frontend") ;;
-            backend)  SKILL_DIRS+=("backend") ;;
-        esac
-    done
-    SKILL_DIRS_DEDUP=("${SKILL_DIRS[@]}")
-
-    # Generate Python list string for skill directories
-    SKILL_DIRS_PYTHON="["
-    _first=true
-    for dir in "${SKILL_DIRS_DEDUP[@]}"; do
-        if $_first; then
-            SKILL_DIRS_PYTHON="$SKILL_DIRS_PYTHON'$dir'"
-            _first=false
-        else
-            SKILL_DIRS_PYTHON="$SKILL_DIRS_PYTHON, '$dir'"
-        fi
-    done
-    SKILL_DIRS_PYTHON="$SKILL_DIRS_PYTHON]"
+    # Flat skill structure: all skills directly under .agents/skills/, categorized by naming convention
+    SKILL_DIRS_DEDUP=()
+    SKILL_DIRS_PYTHON="[]"
 
     # Join indices with commas for Python list syntax
     SELECTED_WF_INDICES_JOINED=$(IFS=,; echo "${SELECTED_WF_INDICES[*]}")
@@ -240,7 +221,7 @@ for wf in d.get('workflows', {}):
     echo "📥 Checking for framework updates..."
     echo "  Workflows: ${WF_SELECTED_NAMES[*]}"
 
-    # Display skills organized by category
+    # Display skills organized by category (naming convention: frontend-*, backend-*, else shared)
     python3 -c "
 import json
 with open('$REMOTE_MANIFEST') as f:
@@ -248,31 +229,34 @@ with open('$REMOTE_MANIFEST') as f:
 wfs = list(d.get('workflows', {}))
 selected = [${SELECTED_WF_INDICES_JOINED}]
 selected_names = [wfs[i] for i in selected]
-wf_files = {}
+all_skills = set()
 for name in wfs:
-    wf_files[name] = set()
     for stage in d['workflows'][name].get('stages', {}).values():
         for fpath in stage.get('files', {}):
-            wf_files[name].add(fpath)
-shared_files = set.intersection(*(wf_files[n] for n in selected_names)) if selected_names else set()
+            if fpath.endswith('/SKILL.md'):
+                all_skills.add(fpath.split('/')[-2])
 essential = set()
-for f in shared_files:
-    if '/shared/' in f and f.endswith('/SKILL.md'):
-        essential.add(f.split('/shared/')[1].split('/')[0])
+frontend = set()
+backend = set()
+for s in sorted(all_skills):
+    if s.startswith('frontend-'):
+        frontend.add(s)
+    elif s.startswith('backend-'):
+        backend.add(s)
+    else:
+        essential.add(s)
 if essential:
     print('  Essential Skills:')
     for s in sorted(essential):
         print(f'    - {s}')
-for name in selected_names:
-    unique = set()
-    for f in wf_files[name]:
-        prefix = '/' + name + '/'
-        if prefix in f and f.endswith('/SKILL.md'):
-            unique.add(f.split(prefix)[1].split('/')[0])
-    if unique:
-        print(f'  {name}:')
-        for s in sorted(unique):
-            print(f'    - {s}')
+if frontend:
+    print('  frontend:')
+    for s in sorted(frontend):
+        print(f'    - {s}')
+if backend:
+    print('  backend:')
+    for s in sorted(backend):
+        print(f'    - {s}')
 " 2>/dev/null || true
 
     # Extract paths and versions as pipe-delimited lines

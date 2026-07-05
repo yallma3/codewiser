@@ -228,20 +228,14 @@ if ($remoteManifestObj.workflows) {
         }
     }
 
-    # Build skill directories: essential (shared) first, then workflow-specific
-    $skillDirs = @("shared")
-    foreach ($wf in $selectedNames) {
-        switch ($wf) {
-            "frontend" { $skillDirs += "frontend" }
-            "backend"  { $skillDirs += "backend" }
-        }
-    }
+    # Flat skill structure: all skills directly under .agents/skills/, categorized by naming convention
+    $skillDirs = @()
 
     Write-Host ""
     Write-Host ">> Checking for framework updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
 
-    # Display skills organized by category
+    # Display skills organized by category (naming convention: frontend-*, backend-*, else shared)
     $allFiles = @{}
     foreach ($wfName in $remoteManifestObj.workflows.PSObject.Properties.Name) {
         $wf = $remoteManifestObj.workflows.$wfName
@@ -253,24 +247,29 @@ if ($remoteManifestObj.workflows) {
         }
         $allFiles[$wfName] = $wfFiles
     }
-    # Intersection of all selected workflows' files
-    $sharedFiles = @($allFiles[$selectedNames[0]])
-    for ($i = 1; $i -lt $selectedNames.Count; $i++) {
-        $wfFiles = $allFiles[$selectedNames[$i]]
-        $sharedFiles = @($sharedFiles | Where-Object { $wfFiles -contains $_ })
+    $allSkills = @{}
+    foreach ($wfName in $allFiles.Keys) {
+        foreach ($f in $allFiles[$wfName]) {
+            if ($f -like '*/SKILL.md') {
+                $skillName = ($f -split '/')[-2]
+                $allSkills[$skillName] = $true
+            }
+        }
     }
-    $essential = $sharedFiles | Where-Object { $_ -like '*/shared/*/SKILL.md' } | ForEach-Object { ($_ -split '/shared/')[1].Split('/')[0] } | Sort-Object -Unique
+    $essential = @($allSkills.Keys | Where-Object { $_ -notlike 'frontend-*' -and $_ -notlike 'backend-*' } | Sort-Object)
+    $frontend  = @($allSkills.Keys | Where-Object { $_ -like 'frontend-*' } | Sort-Object)
+    $backend   = @($allSkills.Keys | Where-Object { $_ -like 'backend-*' } | Sort-Object)
     if ($essential) {
         Write-Host "  Essential Skills:"
         foreach ($s in $essential) { Write-Host "    - $s" }
     }
-    foreach ($name in $selectedNames) {
-        $prefix = "/$name/"
-        $unique = $allFiles[$name] | Where-Object { $_ -like "*$prefix*/SKILL.md" } | ForEach-Object { ($_ -split $prefix)[1].Split('/')[0] } | Sort-Object -Unique
-        if ($unique) {
-            Write-Host "  $($name):"
-            foreach ($s in $unique) { Write-Host "    - $s" }
-        }
+    if ($frontend) {
+        Write-Host "  frontend:"
+        foreach ($s in $frontend) { Write-Host "    - $s" }
+    }
+    if ($backend) {
+        Write-Host "  backend:"
+        foreach ($s in $backend) { Write-Host "    - $s" }
     }
 
     $remoteFiles = Flatten-WorkflowFiles -ManifestObj $remoteManifestObj -SelectedIndices $selectedIndices
