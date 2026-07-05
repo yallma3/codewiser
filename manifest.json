@@ -41,6 +41,8 @@
           "files": {
             ".agents/skills/shared/implement-plan/SKILL.md": "1.0.0",
             ".agents/skills/shared/analyze/SKILL.md": "1.0.0",
+            ".agents/skills/shared/design-thinking/SKILL.md": "1.0.0",
+            ".agents/skills/shared/commit-design/SKILL.md": "1.0.0",
             ".agents/skills/shared/commit-research/SKILL.md": "1.0.0",
             ".agents/skills/shared/git-worktrees/SKILL.md": "1.0.0",
             ".agents/git-worktrees/README.md": "1.0.0",
@@ -87,6 +89,8 @@
           "files": {
             ".agents/skills/shared/implement-plan/SKILL.md": "1.0.0",
             ".agents/skills/shared/analyze/SKILL.md": "1.0.0",
+            ".agents/skills/shared/design-thinking/SKILL.md": "1.0.0",
+            ".agents/skills/shared/commit-design/SKILL.md": "1.0.0",
             ".agents/skills/shared/commit-research/SKILL.md": "1.0.0",
             ".agents/skills/shared/git-worktrees/SKILL.md": "1.0.0",
             ".agents/git-worktrees/README.md": "1.0.0",
