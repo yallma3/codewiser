@@ -235,46 +235,49 @@ if ($remoteManifestObj.workflows) {
     Write-Host ">> Checking for framework updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
 
-    # Display skills organized by category (naming convention: frontend-*, backend-*, else shared)
-    $allFiles = @{}
+    # Build skill → workflow membership mapping
+    $skillWorkflows = @{}
     foreach ($wfName in $remoteManifestObj.workflows.PSObject.Properties.Name) {
         $wf = $remoteManifestObj.workflows.$wfName
-        $wfFiles = @()
         foreach ($stage in $wf.stages.PSObject.Properties.Value) {
             foreach ($entry in $stage.files.PSObject.Properties) {
-                $wfFiles += $entry.Name
+                if ($entry.Name -like '*/SKILL.md') {
+                    $skillName = ($entry.Name -split '/')[-2]
+                    if (-not $skillWorkflows.ContainsKey($skillName)) {
+                        $skillWorkflows[$skillName] = @()
+                    }
+                    if ($skillWorkflows[$skillName] -notcontains $wfName) {
+                        $skillWorkflows[$skillName] += $wfName
+                    }
+                }
             }
         }
-        $allFiles[$wfName] = $wfFiles
     }
-    $allSkills = @{}
-    foreach ($wfName in $allFiles.Keys) {
-        foreach ($f in $allFiles[$wfName]) {
-            if ($f -like '*/SKILL.md') {
-                $skillName = ($f -split '/')[-2]
-                $allSkills[$skillName] = $true
+
+    # Group skills by category: shared skills → Essential, workflow-specific → workflow heading
+    $categories = @{}
+    foreach ($skillName in $skillWorkflows.Keys | Sort-Object) {
+        $wfList = $skillWorkflows[$skillName]
+        if ($wfList.Count -eq 1) {
+            $cat = $wfList[0]
+        } else {
+            $cat = "Essential Skills"
+        }
+        if (-not $categories.ContainsKey($cat)) {
+            $categories[$cat] = @()
+        }
+        $categories[$cat] += $skillName
+    }
+
+    # Display Essential first, then workflow categories alphabetically
+    $displayOrder = @("Essential Skills") + ($categories.Keys | Where-Object { $_ -ne "Essential Skills" } | Sort-Object)
+    foreach ($cat in $displayOrder) {
+        if ($categories.ContainsKey($cat) -and $categories[$cat].Count -gt 0) {
+            Write-Host "  ${cat}:"
+            foreach ($s in $categories[$cat]) {
+                Write-Host "    - $s"
             }
         }
-    }
-    $essential = @($allSkills.Keys | Where-Object { $_ -notlike 'frontend-*' -and $_ -notlike 'backend-*' -and $_ -notlike 'testdriven-*' } | Sort-Object)
-    $frontend  = @($allSkills.Keys | Where-Object { $_ -like 'frontend-*' } | Sort-Object)
-    $backend   = @($allSkills.Keys | Where-Object { $_ -like 'backend-*' } | Sort-Object)
-    $testdriven = @($allSkills.Keys | Where-Object { $_ -like 'testdriven-*' } | Sort-Object)
-    if ($essential) {
-        Write-Host "  Essential Skills:"
-        foreach ($s in $essential) { Write-Host "    - $s" }
-    }
-    if ($frontend) {
-        Write-Host "  frontend:"
-        foreach ($s in $frontend) { Write-Host "    - $s" }
-    }
-    if ($backend) {
-        Write-Host "  backend:"
-        foreach ($s in $backend) { Write-Host "    - $s" }
-    }
-    if ($testdriven) {
-        Write-Host "  testdriven:"
-        foreach ($s in $testdriven) { Write-Host "    - $s" }
     }
 
     $remoteFiles = Flatten-WorkflowFiles -ManifestObj $remoteManifestObj -SelectedIndices $selectedIndices
