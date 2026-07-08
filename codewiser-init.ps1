@@ -256,9 +256,10 @@ if ($remoteManifestObj.workflows) {
             }
         }
     }
-    $essential = @($allSkills.Keys | Where-Object { $_ -notlike 'frontend-*' -and $_ -notlike 'backend-*' } | Sort-Object)
+    $essential = @($allSkills.Keys | Where-Object { $_ -notlike 'frontend-*' -and $_ -notlike 'backend-*' -and $_ -notlike 'testdriven-*' } | Sort-Object)
     $frontend  = @($allSkills.Keys | Where-Object { $_ -like 'frontend-*' } | Sort-Object)
     $backend   = @($allSkills.Keys | Where-Object { $_ -like 'backend-*' } | Sort-Object)
+    $testdriven = @($allSkills.Keys | Where-Object { $_ -like 'testdriven-*' } | Sort-Object)
     if ($essential) {
         Write-Host "  Essential Skills:"
         foreach ($s in $essential) { Write-Host "    - $s" }
@@ -270,6 +271,10 @@ if ($remoteManifestObj.workflows) {
     if ($backend) {
         Write-Host "  backend:"
         foreach ($s in $backend) { Write-Host "    - $s" }
+    }
+    if ($testdriven) {
+        Write-Host "  testdriven:"
+        foreach ($s in $testdriven) { Write-Host "    - $s" }
     }
 
     $remoteFiles = Flatten-WorkflowFiles -ManifestObj $remoteManifestObj -SelectedIndices $selectedIndices

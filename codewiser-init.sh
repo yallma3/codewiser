@@ -238,11 +238,14 @@ for name in wfs:
 essential = set()
 frontend = set()
 backend = set()
+testdriven = set()
 for s in sorted(all_skills):
     if s.startswith('frontend-'):
         frontend.add(s)
     elif s.startswith('backend-'):
         backend.add(s)
+    elif s.startswith('testdriven-'):
+        testdriven.add(s)
     else:
         essential.add(s)
 if essential:
@@ -256,6 +259,10 @@ if frontend:
 if backend:
     print('  backend:')
     for s in sorted(backend):
+        print(f'    - {s}')
+if testdriven:
+    print('  testdriven:')
+    for s in sorted(testdriven):
         print(f'    - {s}')
 " 2>/dev/null || true
 
