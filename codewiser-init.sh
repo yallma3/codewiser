@@ -221,7 +221,7 @@ for wf in d.get('workflows', {}):
     echo "📥 Checking for framework updates..."
     echo "  Workflows: ${WF_SELECTED_NAMES[*]}"
 
-    # Display skills organized by workflow membership (shared → Essential, unique → workflow heading)
+    # Display skills organized by category (naming convention: frontend-*, backend-*, else shared)
     python3 -c "
 import json
 with open('$REMOTE_MANIFEST') as f:
@@ -229,34 +229,41 @@ with open('$REMOTE_MANIFEST') as f:
 wfs = list(d.get('workflows', {}))
 selected = [${SELECTED_WF_INDICES_JOINED}]
 selected_names = [wfs[i] for i in selected]
-# Build skill → workflow membership mapping
-skill_workflows = {}
+all_skills = set()
 for name in wfs:
     for stage in d['workflows'][name].get('stages', {}).values():
         for fpath in stage.get('files', {}):
             if fpath.endswith('/SKILL.md'):
-                skill_name = fpath.split('/')[-2]
-                if skill_name not in skill_workflows:
-                    skill_workflows[skill_name] = set()
-                skill_workflows[skill_name].add(name)
-# Group skills: shared skills → Essential, workflow-specific → workflow heading
-categories = {}
-for skill_name in sorted(skill_workflows.keys()):
-    wf_set = skill_workflows[skill_name]
-    if len(wf_set) == 1:
-        cat = next(iter(wf_set))
+                all_skills.add(fpath.split('/')[-2])
+essential = set()
+frontend = set()
+backend = set()
+testdriven = set()
+for s in sorted(all_skills):
+    if s.startswith('frontend-'):
+        frontend.add(s)
+    elif s.startswith('backend-'):
+        backend.add(s)
+    elif s.startswith('testdriven-'):
+        testdriven.add(s)
     else:
-        cat = 'Essential Skills'
-    if cat not in categories:
-        categories[cat] = []
-    categories[cat].append(skill_name)
-# Display Essential first, then workflow categories alphabetically
-for cat in sorted(categories.keys(), key=lambda c: (c != 'Essential Skills', c)):
-    skills = categories[cat]
-    if skills:
-        print(f'  {cat}:')
-        for s in skills:
-            print(f'    - {s}')
+        essential.add(s)
+if essential:
+    print('  Essential Skills:')
+    for s in sorted(essential):
+        print(f'    - {s}')
+if frontend:
+    print('  frontend:')
+    for s in sorted(frontend):
+        print(f'    - {s}')
+if backend:
+    print('  backend:')
+    for s in sorted(backend):
+        print(f'    - {s}')
+if testdriven:
+    print('  testdriven:')
+    for s in sorted(testdriven):
+        print(f'    - {s}')
 " 2>/dev/null || true
 
     # Extract paths and versions as pipe-delimited lines

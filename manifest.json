@@ -186,17 +186,17 @@
           "description": "Test infrastructure, fixture, and double design",
           "version": "1.0.0",
           "files": {
-            ".agents/skills/testdriven/test-infrastructure/SKILL.md": {
+            ".agents/skills/testdriven-test-infrastructure/SKILL.md": {
               "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven/test-infrastructure/SKILL.md"
+              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-infrastructure/SKILL.md"
             },
-            ".agents/skills/testdriven/test-fixtures/SKILL.md": {
+            ".agents/skills/testdriven-test-fixtures/SKILL.md": {
               "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven/test-fixtures/SKILL.md"
+              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-fixtures/SKILL.md"
             },
-            ".agents/skills/testdriven/test-doubles/SKILL.md": {
+            ".agents/skills/testdriven-test-doubles/SKILL.md": {
               "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven/test-doubles/SKILL.md"
+              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-doubles/SKILL.md"
             }
           }
         },
