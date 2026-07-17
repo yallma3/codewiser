@@ -3,10 +3,24 @@
 set -e
 
 RAW_BASE="https://raw.githubusercontent.com/yallma3/codewiser/main"
+VERBOSE=false
 
 # --- Argument validation ---
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -v|--verbose) VERBOSE=true; shift ;;
+        -h|--help)
+            echo "Usage: $0 [-v] <target-directory>"
+            echo "  Initializes the multi-agent framework in the specified directory."
+            echo "  -v, --verbose  Print verbose messages for download and parsing"
+            exit 0
+            ;;
+        *) break ;;
+    esac
+done
+
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <target-directory>"
+    echo "Usage: $0 [-v] <target-directory>"
     echo "  Initializes the multi-agent framework in the specified directory."
     exit 1
 fi
@@ -21,11 +35,20 @@ download() {
     local url="$1"
     local dest="$2"
     mkdir -p "$(dirname "$dest")"
+    if $VERBOSE; then echo "  ⬇  Downloading $url"; fi
     if command -v wget &>/dev/null; then
-        wget -q -O "$dest" "$url" 2>/dev/null && return 0
+        if $VERBOSE; then
+            wget -O "$dest" "$url" 2>&1 && return 0
+        else
+            wget -q -O "$dest" "$url" 2>/dev/null && return 0
+        fi
     fi
     if command -v curl &>/dev/null; then
-        curl -sSL -o "$dest" "$url" 2>/dev/null && return 0
+        if $VERBOSE; then
+            curl -SL -o "$dest" "$url" 2>&1 && return 0
+        else
+            curl -sSL -o "$dest" "$url" 2>/dev/null && return 0
+        fi
     fi
     return 1
 }
@@ -34,13 +57,23 @@ download() {
 json_parse() {
     local manifest="$1"
     local expr="$2"
+    if $VERBOSE; then echo "  🔍 Parsing $manifest"; fi
     if command -v python3 &>/dev/null; then
-        python3 -c "
+        if $VERBOSE; then
+            python3 -c "
+import json,sys
+with open('$manifest') as f:
+    d = json.load(f)
+$expr
+"
+        else
+            python3 -c "
 import json,sys
 with open('$manifest') as f:
     d = json.load(f)
 $expr
 " 2>/dev/null
+        fi
     fi
 }
 
@@ -135,7 +168,7 @@ echo "📥 Fetching available workflows..."
 REMOTE_MANIFEST=$(mktemp)
 LOCAL_MANIFEST="$TARGET_DIR/.agents/manifest.json"
 
-download "$RAW_BASE/manifest.json" "$REMOTE_MANIFEST"
+download "$RAW_BASE/.agents/manifest.json" "$REMOTE_MANIFEST"
 if [ ! -s "$REMOTE_MANIFEST" ]; then
     echo "  ⚠ Failed to download remote manifest. Aborting."
     rm -f "$REMOTE_MANIFEST"
@@ -300,7 +333,6 @@ else
     declare -A REMOTE_VERSIONS
     for path in "${REMOTE_PATHS[@]}"; do
         [ -z "$path" ] && continue
-        local escaped_path
         escaped_path=$(echo "$path" | sed 's|\.|\\.|g; s|/|\\/|g')
         ver=$(grep -o "\"$escaped_path\"[[:space:]]*:[[:space:]]*\"[0-9.]*\"" "$REMOTE_MANIFEST" 2>/dev/null \
             | grep -o '"[0-9.]*"' | tr -d '"')
@@ -345,7 +377,7 @@ done
 rm -f "$REMOTE_MANIFEST"
 
 # Save updated local manifest
-download "$RAW_BASE/manifest.json" "$LOCAL_MANIFEST" || true
+download "$RAW_BASE/.agents/manifest.json" "$LOCAL_MANIFEST" || true
 
 # --- 4. Generate supplementary explicit configurations ---
 if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then
