@@ -29,7 +29,7 @@ if ($resolvedDir) {
 }
 New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
 
-Write-Host ">> Initializing Multi-Agent Skills Framework in $TargetDir..."
+Write-Host ">> Setting up codewiser in $TargetDir..."
 
 # --- Agent Selection (checkbox-style) ---
 $choices = @("OpenCode / MiMo / Crush", "Claude Code", "Cursor", "Antigravity", "Kilo Code")
@@ -77,7 +77,7 @@ $use_kilo     = $selections[4]
 
 # --- 1. Create directory structure ---
 Write-Host ""
-Write-Host ">> Creating folder architecture..."
+Write-Host ">> Creating directories..."
 mkdir "$TargetDir\.agents" -Force | Out-Null
 mkdir "$TargetDir\.agents\skills" -Force | Out-Null
 mkdir "$TargetDir\.agents\specs" -Force | Out-Null
@@ -161,14 +161,14 @@ function Flatten-WorkflowFiles {
 
 # --- 2. Download remote manifest ---
 Write-Host ""
-Write-Host ">> Fetching available workflows..."
+Write-Host ">> Fetching manifest..."
 
 $localManifestPath = "$TargetDir\.agents\manifest.json"
 $remoteManifest = New-TemporaryFile
 
 $manifestOk = Download -Url "$RAW_BASE/manifest.json" -Dest $remoteManifest.FullName
 if (-not $manifestOk) {
-    Write-Host "  !! Failed to download remote manifest. Aborting."
+    Write-Host "  !! Failed to download manifest. Aborting."
     Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
     exit 1
 }
@@ -227,7 +227,7 @@ if ($remoteManifestObj.modes) {
     $modeDesc = $remoteManifestObj.modes.$selectedMode.description
 
     Write-Host ""
-    Write-Host ">> Checking for framework updates..."
+    Write-Host ">> Checking for updates..."
     Write-Host "  Mode: $selectedMode — $modeDesc"
 
     # Display skills for the selected mode
@@ -247,6 +247,8 @@ if ($remoteManifestObj.modes) {
     foreach ($entry in $modeFiles.PSObject.Properties) {
         $remoteFiles[$entry.Name] = $entry.Value
     }
+
+    $skillDirs = @()
 } elseif ($remoteManifestObj.workflows) {
     # --- Backward compatibility: legacy workflows structure (v2.x) ---
     $wfNames = @($remoteManifestObj.workflows.PSObject.Properties.Name)
@@ -302,7 +304,7 @@ if ($remoteManifestObj.modes) {
     $skillDirs = @()
 
     Write-Host ""
-    Write-Host ">> Checking for framework updates..."
+    Write-Host ">> Checking for updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
 
     $allFiles = @{}
@@ -350,7 +352,7 @@ if ($remoteManifestObj.modes) {
 } elseif ($remoteManifestObj.files) {
     # --- Backward compatibility: flat files structure (v1.x) ---
     Write-Host ""
-    Write-Host ">> Checking for framework updates..."
+    Write-Host ">> Checking for updates..."
 
     foreach ($entry in $remoteManifestObj.files.PSObject.Properties) {
         $remoteFiles[$entry.Name] = $entry.Value
@@ -389,7 +391,7 @@ foreach ($entry in $remoteFiles.GetEnumerator()) {
             Write-Host "    Skipped."
         }
     } else {
-        Write-Host "  OK $path (up to date)"
+        Write-Host "     $path (up to date)"
     }
 }
 
@@ -492,7 +494,7 @@ if ($use_kilo -and -not (Test-Path "$TargetDir\.kilo\config.json")) {
 
 # --- 5. Create symbolic links ---
 Write-Host ""
-Write-Host ">> Generating symbolic links..."
+Write-Host ">> Linking agent skill directories..."
 
 function Migrate-And-Symlink {
     param([string]$Src, [string]$Dest, [string]$Label)
@@ -545,4 +547,4 @@ if ($use_claude) { Write-Host "  - $TargetDir\.claude\skills -> ..\.agents\skill
 if ($use_cursor) { Write-Host "  - $TargetDir\.cursor\skills -> ..\.agents\skills" }
 
 Write-Host ""
-Write-Host "** Setup complete! Target: $TargetDir"
+Write-Host ">> Done. Target: $TargetDir"

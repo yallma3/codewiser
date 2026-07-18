@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload codewiser.sh
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: codewiser.sh
+          asset_name: codewiser.sh
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Upload codewiser.ps1
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: codewiser.ps1
+          asset_name: codewiser.ps1
+          tag: ${{ github.ref }}
+          overwrite: true

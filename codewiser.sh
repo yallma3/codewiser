@@ -28,7 +28,7 @@ fi
 TARGET_DIR="$(realpath "$1")"
 mkdir -p "$TARGET_DIR"
 
-echo "🚀 Initializing Multi-Agent Skills Framework in $TARGET_DIR..."
+echo ">> Setting up codewiser in $TARGET_DIR..."
 
 # --- Helper: download with wget, fallback to curl ---
 download() {
@@ -155,7 +155,7 @@ use_kilo=false;        [[ ${selections[4]} -eq 1 ]] && use_kilo=true
 
 # --- 1. Create directory structure ---
 echo ""
-echo "📁 Creating folder architecture..."
+echo ">> Creating directories..."
 mkdir -p "$TARGET_DIR/.agents/skills" \
          "$TARGET_DIR/.agents/specs" \
          "$TARGET_DIR/.agents/plans"
@@ -167,14 +167,14 @@ $use_kilo && mkdir -p "$TARGET_DIR/.kilo"
 
 # --- 2. Download remote manifest ---
 echo ""
-echo "📥 Fetching available workflows..."
+echo ">> Fetching manifest..."
 
 REMOTE_MANIFEST=$(mktemp)
 LOCAL_MANIFEST="$TARGET_DIR/.agents/manifest.json"
 
 download "$RAW_BASE/.agents/manifest.json" "$REMOTE_MANIFEST"
 if [ ! -s "$REMOTE_MANIFEST" ]; then
-    echo "  ⚠ Failed to download remote manifest. Aborting."
+    echo "  !! Failed to download manifest. Aborting."
     rm -f "$REMOTE_MANIFEST"
     exit 1
 fi
@@ -192,7 +192,7 @@ for mode in d.get('modes', {}):
 ")
 
     if [ ${#MODE_NAMES[@]} -eq 0 ]; then
-        echo "  ⚠ No modes found in manifest. Aborting."
+        echo "  !! No modes found in manifest. Aborting."
         rm -f "$REMOTE_MANIFEST"
         exit 1
     fi
@@ -230,7 +230,7 @@ for mode in d.get('modes', {}):
     SELECTED_MODE_DESC=$(json_parse "$REMOTE_MANIFEST" "print(d['modes']['$SELECTED_MODE'].get('description', ''))")
 
     echo ""
-    echo "📥 Checking for framework updates..."
+    echo ">> Checking for updates..."
     echo "  Mode: $SELECTED_MODE — $SELECTED_MODE_DESC"
 
     # Get list of skills for display
@@ -272,7 +272,7 @@ for wf in d.get('workflows', {}):
 ")
 
     if [ ${#WORKFLOW_NAMES[@]} -eq 0 ]; then
-        echo "  ⚠ No workflows found in manifest. Aborting."
+        echo "  !! No workflows found in manifest. Aborting."
         rm -f "$REMOTE_MANIFEST"
         exit 1
     fi
@@ -308,7 +308,7 @@ for wf in d.get('workflows', {}):
                     [[ $s -eq 1 ]] && any_selected=true && break
                 done
                 if ! $any_selected; then
-                    echo "  ⚠ No workflows selected."
+                    echo "  !! No workflows selected."
                     continue
                 fi
                 break
@@ -330,7 +330,7 @@ for wf in d.get('workflows', {}):
     SELECTED_WF_INDICES_JOINED=$(IFS=,; echo "${SELECTED_WF_INDICES[*]}")
 
     echo ""
-    echo "📥 Checking for framework updates..."
+    echo ">> Checking for updates..."
     echo "  Workflows: ${WF_SELECTED_NAMES[*]}"
 
     python3 -c "
@@ -401,7 +401,7 @@ for path, ver in files.items():
 else
     # --- Backward compatibility: flat files structure (v1.x) ---
     echo ""
-    echo "📥 Checking for framework updates..."
+    echo ">> Checking for updates..."
 
     mapfile -t REMOTE_PATHS < <(
         grep -o '"[^"]*\.\(md\|json\)"[[:space:]]*:' "$REMOTE_MANIFEST" | tr -d '"' | sed 's/://'
@@ -431,22 +431,22 @@ for path in "${REMOTE_PATHS[@]}"; do
 
     if [ ! -f "$dest" ]; then
         mkdir -p "$(dirname "$dest")"
-        echo "  📄 $path (new)"
-        download "$url" "$dest" || echo "  ⚠ Failed to download $path"
+        echo "  >> $path (new)"
+        download "$url" "$dest" || echo "  !! Failed to download $path"
     else
         local_ver=$(get_manifest_version "$LOCAL_MANIFEST" "$path")
         [ -z "$local_ver" ] && local_ver="0.0.0"
 
         if version_lt "$local_ver" "$remote_ver"; then
-            echo "  📄 $path ($local_ver → $remote_ver)"
+            echo "  >> $path ($local_ver -> $remote_ver)"
             read -p "    Overwrite? [y/N] " answer
             if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-                download "$url" "$dest" || echo "  ⚠ Failed to download $path"
+                download "$url" "$dest" || echo "  !! Failed to download $path"
             else
                 echo "    Skipped."
             fi
         else
-            echo "  ✓ $path (up to date)"
+            echo "     $path (up to date)"
         fi
     fi
 done
@@ -463,7 +463,7 @@ if [ -n "$SELECTED_MODE" ] && [ -f "$TARGET_DIR/AGENTS.md" ]; then
 
     if ! grep -qF "$PROTOCOL_HEADER" "$TARGET_DIR/AGENTS.md" 2>/dev/null; then
         echo ""
-        echo "📝 Adding $MODE_TITLE Execution Protocol to AGENTS.md..."
+        echo ">> Adding $MODE_TITLE Execution Protocol to AGENTS.md..."
         cat << EOF >> "$TARGET_DIR/AGENTS.md"
 
 $PROTOCOL_HEADER
@@ -478,7 +478,7 @@ fi
 
 # --- 4. Generate supplementary explicit configurations ---
 if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then
-    echo "📄 Creating opencode.json..."
+    echo ">> Creating opencode.json..."
     if [ "${#SKILL_DIRS_DEDUP[@]}" -gt 0 ]; then
         TARGET_DIR="$TARGET_DIR" python3 -c "
 import json, os
@@ -514,7 +514,7 @@ EOF
 fi
 
 if $use_claude && [ ! -f "$TARGET_DIR/CLAUDE.md" ]; then
-    echo "📄 Creating CLAUDE.md..."
+    echo ">> Creating CLAUDE.md..."
     cat << 'EOF' > "$TARGET_DIR/CLAUDE.md"
 # Claude Code Settings
 
@@ -526,7 +526,7 @@ EOF
 fi
 
 if $use_antigravity && [ ! -f "$TARGET_DIR/.antigravity/workflows.json" ]; then
-    echo "📄 Creating .antigravity/workflows.json..."
+    echo ">> Creating .antigravity/workflows.json..."
     cat << 'EOF' > "$TARGET_DIR/.antigravity/workflows.json"
 {
   "workflows": [
@@ -540,7 +540,7 @@ EOF
 fi
 
 if $use_kilo && [ ! -f "$TARGET_DIR/.kilo/config.json" ]; then
-    echo "📄 Creating .kilo/config.json..."
+    echo ">> Creating .kilo/config.json..."
     if [ "${#SKILL_DIRS_DEDUP[@]}" -gt 0 ]; then
         TARGET_DIR="$TARGET_DIR" python3 -c "
 import json, os
@@ -567,7 +567,7 @@ fi
 
 # --- 5. Create symbolic links ---
 echo ""
-echo "🔗 Generating symbolic links..."
+echo ">> Linking agent skill directories..."
 
 migrate_and_symlink() {
     local src="$TARGET_DIR/$1"
@@ -575,7 +575,7 @@ migrate_and_symlink() {
     local label="$3"
 
     if [ -d "$src" ] && [ ! -L "$src" ]; then
-        echo "  ↳ Migrating existing $label assets into .agents..."
+        echo "  -> Migrating existing $label assets..."
         cp -r "$src"/* "$TARGET_DIR/.agents/skills/" 2>/dev/null || true
         rm -rf "$src"
     fi
@@ -585,16 +585,16 @@ migrate_and_symlink() {
     fi
 
     ln -s "$dest" "$src"
-    echo "  ↳ Linked $src -> $dest"
+    echo "  -> Linked $src -> $dest"
 }
 
 $use_claude && migrate_and_symlink ".claude/skills" "../.agents/skills" "Claude Code"
 $use_cursor && migrate_and_symlink ".cursor/skills" "../.agents/skills" "Cursor"
 
 echo ""
-echo "📎 Symbolic links created:"
+echo "  Links:"
 $use_claude && echo "  - $TARGET_DIR/.claude/skills → ../.agents/skills"
 $use_cursor && echo "  - $TARGET_DIR/.cursor/skills → ../.agents/skills"
 
 echo ""
-echo "✅ Setup complete! Target: $TARGET_DIR"
+echo ">> Done. Target: $TARGET_DIR"

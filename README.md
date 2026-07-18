@@ -46,7 +46,7 @@ A centralized `.agents/` directory and a universal `AGENTS.md` instruction file 
 
 ```bash
 # 1. Run the interactive setup script with a target directory
-./codewiser-init.sh ./my-project
+./codewiser.sh ./my-project
 
 # 2. Select your AI agents and development mode (Prototype, Spec Driven, or Rigid)
 #    The script downloads the relevant skills, spec templates, and creates
@@ -60,7 +60,7 @@ A centralized `.agents/` directory and a universal `AGENTS.md` instruction file 
 On Windows (PowerShell):
 
 ```powershell
-.\codewiser-init.ps1 .\my-project
+.\codewiser.ps1 .\my-project
 ```
 
 ## Supported Agents
@@ -93,8 +93,8 @@ Example: the [git-worktrees skill](.agents/skills/shared/git-worktrees/SKILL.md)
 
 | Platform | Script | Source |
 |---|---|---|
-| Linux / macOS | `codewiser-init.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
-| Windows | `codewiser-init.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
+| Linux / macOS | `codewiser.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
+| Windows | `codewiser.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
 
 Both scripts use `manifest.json` to track artifact versions organized by development modes. During setup, you select which AI agents and which mode (**Prototype**, **Spec Driven**, or **Rigid**) to use. The selected mode determines which skills are downloaded and customizes `AGENTS.md` with the appropriate execution protocol.
 
