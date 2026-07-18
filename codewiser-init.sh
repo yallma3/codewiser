@@ -86,7 +86,12 @@ get_manifest_version() {
 import json,sys
 with open('$manifest') as f:
     d = json.load(f)
-if 'workflows' in d:
+if 'modes' in d:
+    for mode in d['modes'].values():
+        if '$path' in mode.get('files', {}):
+            print(mode['files']['$path'])
+            sys.exit(0)
+elif 'workflows' in d:
     for wf in d['workflows'].values():
         for stage in wf.get('stages', {}).values():
             if '$path' in stage.get('files', {}):
@@ -174,11 +179,93 @@ if [ ! -s "$REMOTE_MANIFEST" ]; then
     exit 1
 fi
 
-# Detect manifest format: workflows or flat files
-HAS_WORKFLOWS=$(json_parse "$REMOTE_MANIFEST" "print('true' if 'workflows' in d else 'false')")
+# Detect manifest format: modes, workflows, or flat files
+HAS_MODES=$(json_parse "$REMOTE_MANIFEST" "print('true' if 'modes' in d else 'false')")
 
-if [ "$HAS_WORKFLOWS" = "true" ]; then
-    # --- Workflow Selection ---
+SELECTED_MODE=""
+
+if [ "$HAS_MODES" = "true" ]; then
+    # --- Mode Selection (single choice) ---
+    mapfile -t MODE_NAMES < <(json_parse "$REMOTE_MANIFEST" "
+for mode in d.get('modes', {}):
+    print(mode)
+")
+
+    if [ ${#MODE_NAMES[@]} -eq 0 ]; then
+        echo "  ⚠ No modes found in manifest. Aborting."
+        rm -f "$REMOTE_MANIFEST"
+        exit 1
+    fi
+
+    echo ""
+    echo "Select development mode (enter number):"
+
+    while true; do
+        for i in "${!MODE_NAMES[@]}"; do
+            desc=$(json_parse "$REMOTE_MANIFEST" "print(d['modes']['${MODE_NAMES[$i]}'].get('description', ''))")
+            if [ "$i" -eq $((SELECTED_MODE_IDX)) ] 2>/dev/null; then
+                echo "  [x] $((i+1))) ${MODE_NAMES[$i]}"
+            else
+                echo "  [ ] $((i+1))) ${MODE_NAMES[$i]}"
+            fi
+            echo "       $desc"
+        done
+        echo "  [ ] c) Cancel"
+        read -p "> " input
+        input=${input//$'\r'}
+
+        case "$input" in
+            [1-9]*)
+                idx=$((input-1))
+                [ $idx -ge ${#MODE_NAMES[@]} ] && echo "  Invalid choice." && continue
+                SELECTED_MODE="${MODE_NAMES[$idx]}"
+                SELECTED_MODE_IDX=$idx
+                break
+                ;;
+            c|C) echo "Cancelled."; rm -f "$REMOTE_MANIFEST"; exit 0 ;;
+            *) echo "  Invalid choice." ;;
+        esac
+    done
+
+    SELECTED_MODE_DESC=$(json_parse "$REMOTE_MANIFEST" "print(d['modes']['$SELECTED_MODE'].get('description', ''))")
+
+    echo ""
+    echo "📥 Checking for framework updates..."
+    echo "  Mode: $SELECTED_MODE — $SELECTED_MODE_DESC"
+
+    # Get list of skills for display
+    python3 -c "
+import json
+with open('$REMOTE_MANIFEST') as f:
+    d = json.load(f)
+mode = d.get('modes', {}).get('$SELECTED_MODE', {})
+skills = []
+for fpath in mode.get('files', {}):
+    if fpath.endswith('/SKILL.md'):
+        skills.append(fpath.split('/')[-2])
+if skills:
+    print('  Skills:')
+    for s in sorted(skills):
+        print(f'    - {s}')
+" 2>/dev/null || true
+
+    # Extract paths and versions as pipe-delimited lines
+    RAW_FILE_LIST=$(json_parse "$REMOTE_MANIFEST" "
+mode = d.get('modes', {}).get('$SELECTED_MODE', {})
+files = mode.get('files', {})
+for path, ver in files.items():
+    print(path + '|' + ver)
+")
+
+    REMOTE_PATHS=()
+    declare -A REMOTE_VERSIONS
+    while IFS='|' read -r path ver; do
+        [ -z "$path" ] && continue
+        REMOTE_PATHS+=("$path")
+        REMOTE_VERSIONS["$path"]="$ver"
+    done <<< "$RAW_FILE_LIST"
+elif [ "$(json_parse "$REMOTE_MANIFEST" "print('true' if 'workflows' in d else 'false')")" = "true" ]; then
+    # --- Backward compatibility: legacy workflows structure (v2.x) ---
     mapfile -t WORKFLOW_NAMES < <(json_parse "$REMOTE_MANIFEST" "
 for wf in d.get('workflows', {}):
     print(wf)
@@ -231,7 +318,6 @@ for wf in d.get('workflows', {}):
         esac
     done
 
-    # Build selected workflow indices list
     SELECTED_WF_INDICES=()
     WF_SELECTED_NAMES=()
     for i in "${!wf_selections[@]}"; do
@@ -241,19 +327,12 @@ for wf in d.get('workflows', {}):
         fi
     done
 
-    # Flat skill structure: all skills directly under .agents/skills/, categorized by naming convention
-    SKILL_DIRS_DEDUP=()
-    SKILL_DIRS_PYTHON="[]"
-
-    # Join indices with commas for Python list syntax
     SELECTED_WF_INDICES_JOINED=$(IFS=,; echo "${SELECTED_WF_INDICES[*]}")
 
-    # --- Flatten selected workflows into deduplicated file list ---
     echo ""
     echo "📥 Checking for framework updates..."
     echo "  Workflows: ${WF_SELECTED_NAMES[*]}"
 
-    # Display skills organized by category (naming convention: frontend-*, backend-*, else shared)
     python3 -c "
 import json
 with open('$REMOTE_MANIFEST') as f:
@@ -298,7 +377,6 @@ if testdriven:
         print(f'    - {s}')
 " 2>/dev/null || true
 
-    # Extract paths and versions as pipe-delimited lines
     RAW_FILE_LIST=$(json_parse "$REMOTE_MANIFEST" "
 wfs = list(d.get('workflows', {}))
 selected = [${SELECTED_WF_INDICES_JOINED}]
@@ -337,11 +415,11 @@ else
             | grep -o '"[0-9.]*"' | tr -d '"')
         REMOTE_VERSIONS["$path"]="$ver"
     done
-
-    # Fallback: no workflow selection (v1.x flat format)
-    SKILL_DIRS_DEDUP=()
-    SKILL_DIRS_PYTHON="[]"
 fi
+
+# Track whether skill dirs list was computed (only relevant for workflow/legacy paths)
+SKILL_DIRS_DEDUP=()
+SKILL_DIRS_PYTHON="[]"
 
 # --- 3. Download/update files ---
 for path in "${REMOTE_PATHS[@]}"; do
@@ -377,6 +455,26 @@ rm -f "$REMOTE_MANIFEST"
 
 # Save updated local manifest
 download "$RAW_BASE/.agents/manifest.json" "$LOCAL_MANIFEST" || true
+
+# --- Customize AGENTS.md with mode-specific Execution Protocol ---
+if [ -n "$SELECTED_MODE" ] && [ -f "$TARGET_DIR/AGENTS.md" ]; then
+    MODE_TITLE=$(echo "$SELECTED_MODE" | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
+    PROTOCOL_HEADER="## ${MODE_TITLE} Execution Protocol"
+
+    if ! grep -qF "$PROTOCOL_HEADER" "$TARGET_DIR/AGENTS.md" 2>/dev/null; then
+        echo ""
+        echo "📝 Adding $MODE_TITLE Execution Protocol to AGENTS.md..."
+        cat << EOF >> "$TARGET_DIR/AGENTS.md"
+
+$PROTOCOL_HEADER
+
+All file modifications or code generation tasks in this project MUST follow the
+${MODE_TITLE} lifecycle defined below. The bootstrap skill will complete this
+section with the full protocol after initial project analysis.
+
+EOF
+    fi
+fi
 
 # --- 4. Generate supplementary explicit configurations ---
 if $use_opencode && [ ! -f "$TARGET_DIR/opencode.json" ]; then

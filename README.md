@@ -1,14 +1,20 @@
 # codewiser
 
-A **multi-agent AI development framework** — a reusable skills-and-specs system for running multiple AI coding agents (OpenCode, Claude Code, Cursor, Antigravity, Kilo Code) on the same repository with **shared context, shared skills, and a spec-driven execution protocol**.
+An **agentic skills framework & software development flows** system — a reusable skills-and-specs platform for AI coding agents (OpenCode, Claude Code, Cursor, Antigravity, Kilo Code) that enforces **spec-driven development** through shared context, composable skills, and mode-tailored execution protocols.
 
-## Problem
+## Philosophy
 
-When multiple AI coding agents work on the same codebase, each agent has its own private config, instructions, and context. Work done by one agent is invisible to the next, leading to context loss, duplicated effort, and conflicting changes.
+### 1. Speed must not blur vision
 
-## Solution
+Software development slows down when the team can't tell what needs to change, where it needs to change, and how it should change. Coding agents amplify this risk — they generate code faster than anyone can review, making it easy to lose sight of the bigger picture. Codewiser ensures that **speed does not blur vision**: every change is grounded in explicit specs, plans, and design decisions that are kept in sync with the code.
 
-A centralized `.agents/` directory and a universal `AGENTS.md` instruction file that every agent reads. Agents use a **spec-driven protocol**: before modifying code, they read product and system specs to ensure alignment. If the design changes, specs are updated first.
+### 2. Higher-order artifacts are first-class citizens
+
+Specs, plans, design options, architecture decisions — these are not paperwork. They are **first-class artifacts** that must be analyzed, verified, and enhanced just as rigorously as compilable code. A change to the code without a corresponding update to the spec is an incomplete change. Codewiser treats documentation, requirements, and design as code — versioned, reviewed, and kept truthful.
+
+## How It Works
+
+A centralized `.agents/` directory and a universal `AGENTS.md` instruction file that every agent reads. Agents follow a **mode-tailored execution protocol**: depending on the selected mode (Prototype, Spec Driven, Rigid), they read relevant specs, create plans, explore options, and update artifacts before and after every code change.
 
 ```
 .agents/
@@ -42,13 +48,13 @@ A centralized `.agents/` directory and a universal `AGENTS.md` instruction file 
 # 1. Run the interactive setup script with a target directory
 ./codewiser-init.sh ./my-project
 
-# 2. Select your AI agents (OpenCode, Claude Code, Cursor, etc.)
-#    The script downloads the latest AGENTS.md, skills, and spec
-#    templates from GitHub, creates agent-specific configs, and
-#    symlinks skills into each agent's private config directory.
+# 2. Select your AI agents and development mode (Prototype, Spec Driven, or Rigid)
+#    The script downloads the relevant skills, spec templates, and creates
+#    agent-specific configs with symlinks to the shared `.agents/skills/` directory.
 
-# 3. Start coding — agents read shared context from AGENTS.md,
-#    load skills from .agents/skills/, and follow spec-driven protocol.
+# 3. Start coding — agents read shared context from AGENTS.md (customized with your
+#    mode's execution protocol), load skills from `.agents/skills/`, and follow the
+#    tailored workflow defined by the selected mode.
 ```
 
 On Windows (PowerShell):
@@ -67,12 +73,15 @@ On Windows (PowerShell):
 | **Antigravity** | `.antigravity/workflows.json` | Workflows reference shared `.agents/skills` |
 | **Kilo Code** | `.kilo/config.json` | References `AGENTS.md` and `.agents/skills/*/SKILL.md` |
 
-## Spec-Driven Workflow
+## How a Workflow Runs
 
-1. **Read specs** — Before writing code, agents read `.agents/specs/product.md` and `.agents/specs/system.md`
-2. **Git Worktrees first** — Create an isolated feature branch/worktree before planning and spec changes (see [git-worktrees skill](.agents/skills/shared/git-worktrees/SKILL.md))
-3. **Update specs first** — If an implementation changes the design, update specs before writing production code
-4. **Plan execution** — Task breakdowns go in `.agents/plans/` (naming: `plan_YYMMDD_<name>.md`)
+The exact workflow depends on the selected mode (Prototype, Spec Driven, or Rigid). In general, every workflow follows this pattern:
+
+1. **Read phase** — Before any code change, agents read the relevant spec files to understand what needs to change and why.
+2. **Plan phase** — Work is broken into incremental, verifiable phases.
+3. **Explore & commit** — Design options are researched, tradeoffs documented, and decisions recorded in ADRs.
+4. **Implement & sync** — Code is written. Specs are updated **before and after** to catch drift.
+5. **Verify** — Tests validate the implementation. Specs are updated to reflect what was actually built.
 
 ## Adding a New Skill
 
@@ -87,7 +96,7 @@ Example: the [git-worktrees skill](.agents/skills/shared/git-worktrees/SKILL.md)
 | Linux / macOS | `codewiser-init.sh` | Downloads `AGENTS.md`, skills, and specs from `https://github.com/yallma3/codewiser` |
 | Windows | `codewiser-init.ps1` | Same logic via PowerShell with `Invoke-WebRequest` |
 
-Both scripts use `manifest.json` to track artifact versions organized by workflows and stages. During setup, you select which AI agents and which workflows (e.g., frontend, backend) to install. Only files from the selected workflows' stages are downloaded.
+Both scripts use `manifest.json` to track artifact versions organized by development modes. During setup, you select which AI agents and which mode (**Prototype**, **Spec Driven**, or **Rigid**) to use. The selected mode determines which skills are downloaded and customizes `AGENTS.md` with the appropriate execution protocol.
 
 ## Requirements
 

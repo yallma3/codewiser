@@ -8,54 +8,72 @@ license: MIT
 
 ## Purpose
 
-After the **explore-design-options** skill produces options and the user selects one, this skill formally records the decision — committing it to version control and bridging the ADR into actionable specifications.
+After the **explore-design-options** skill produces design options and the user selects one, this skill formally records the decision in the design-options file.
+
+```
+explore-design-options ──> commit-design
+   (generate options)       (record decision)
+```
 
 ## When to Use
 
-After completing the **analyze** ADR and the user has explicitly chosen an option.
+After the user has explicitly chosen an option from a design-options file produced by `explore-design-options`.
 
 ## Procedure
 
-### 1. Confirm the User's Choice
-Ensure the user has selected a specific option (A, B, etc.) before proceeding.
+### 1. Identify the Design-Options File
 
-### 2. Finalize the ADR
-Ensure the ADR research document is complete with:
-- **Decision section** filled: selected option, rationale, rejected alternatives, impact, risks
-- A reference to the user's explicit choice
+If it is not clear from context which design-options file is under discussion, **ask the user to specify the file path** (e.g., `.agents/design-options/design-option_YYMMDD_<topic>.md`).
 
-### 3. Update Specs (Bridge to Actionable Specs)
-Update the relevant spec files to reflect the decision:
-- `.agents/specs/product.md` — if the decision affects product requirements
-- `.agents/specs/system.md` — if the decision affects architecture or design
-- `.agents/specs/system_<module>.md` — for module-specific changes
-- `.agents/specs/spec-index.json` — update the spec index
+### 2. Confirm the User's Choice
 
-Each update should include a reference back to the research document.
+Ensure the user has explicitly selected a specific option (e.g., "Option B") before proceeding.
+
+### 3. Update the Design-Options File
+
+Append a **Selected Option** section to the design-options file:
+
+```markdown
+## Selected Option
+
+- **Option**: <Option Letter/Name> — <Option Title>
+- **Selected By**: <agent name> (<LLM model>, e.g., opencode/nemotron-3-ultra)
+- **Timestamp**: <ISO 8601 timestamp>
+- **User**: <system username if available>
+- **Rationale**: <brief rationale — especially if different from the original recommendation in explore-design-options>
+- **Reference**: <link or reference to the explore-design-options output that produced the options>
+- **Spec Update Plan**: <bullet list of spec files that need updating and what changes are needed, e.g.:
+  - product.md: add user story X.Y
+  - system.md: architecture section Z
+  - spec-index.json: add entry for new module>
+```
+
+This section records the *actual* decision, its rationale (which may differ from the original recommendation), and a **plan for spec updates** — but does **not** perform the spec updates.
 
 ### 4. Commit the Decision
+
 ```bash
 # Stage all changes
-git add .agents/specs/  # any updated spec files
+git add .agents/design-options/  # the updated design-options file
 
 # Commit with a descriptive message
 git commit -m "docs: record design decision for <topic>
 
-- Researched alternatives using analyze skill
 - Generated options using explore-design-options skill
 - Selected: <option> - <name>
 - Rationale: <brief rationale>"
 ```
 
 ### 5. Verify
+
 - Confirm the commit was created successfully
-- Ensure spec files are up to date
+- Confirm the design-options file contains the Selected Option section with Spec Update Plan
 
 ## Workflow Integration
 
 ```
-explore-design-options ──> analyze ──> commit-design
-(generate options)   (document ADR)   (record decision)
+explore-design-options ──> commit-design ──> create-plan ──> implement-plan
+   (generate options)       (record decision)   (plan specs)    (update specs)
 ```
 
-This skill is the final step — it locks in the decision and makes it traceable.
+The `commit-design` skill only records the decision in the design-options file and includes a **Spec Update Plan**. The actual spec updates are handled by `create-plan` (which references the plan) and `implement-plan` (which executes it).

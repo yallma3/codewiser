@@ -57,6 +57,7 @@ The test: Every changed line should trace directly to the request.
 
 - Update `.agents/specs/spec-index.json` — add an entry linking the implemented source files to their test files and the plan that drove the work.
 - Update `.agents/specs/product.md` if the implementation added, removed, or changed any user-facing behavior, acceptance criteria, or business logic.
+- Update `.agents/specs/system.md` and any related `.agents/specs/system_*<topic>*.md` files to reflect architectural changes, new modules, data model additions, or dependency changes — follow the specific update instructions defined in the plan's spec-update section.
 
 ## 6. Read the Project Conventions
 

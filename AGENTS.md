@@ -36,5 +36,14 @@ If an implementation changes the system design, update the relevant spec files
 first before writing production code.
 
 ## File Naming Conventions
-- Plans: `plan_YYMMDD_<short-name>.md` → `.agents/plans/`
-- Status: `status_YYMMDD_<subject>.md` → `.agents/status/`
+
+| Artifact | Pattern | Location |
+|---|---|---|
+| Business Requirements | `product_<domain>.md` | `.agents/specs/` |
+| UX Specifications | `ux.md` | `.agents/specs/` |
+| System Architecture | `system.md`, `system_<module>.md` | `.agents/specs/` |
+| Spec Index | `spec-index.json` | `.agents/specs/` |
+| Task Plan | `plan_YYMMDD_<short-name>.md` | `.agents/plans/` |
+| Status Report | `status_YYMMDD_<subject>.md` | `.agents/status/` |
+| Architecture Decision Record | `adr_YYMMDD_<title>.md` | `.agents/research/` |
+| Design Decision | `design_YYMMDD_<topic>.md` | `.agents/research/` |

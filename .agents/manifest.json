@@ -1,233 +1,152 @@
 {
   "$schema": "manifest.json",
-  "description": "Version manifest for downloadable framework artifacts. Organized by workflows and stages. Used by codewiser-init.sh to detect and prompt for updates.",
-  "version": "2.3.0",
-  "workflows": {
-    "frontend": {
-      "description": "Frontend feature development workflow",
-      "version": "2.0.0",
-      "stages": {
-        "product-mvp": {
-          "description": "Product requirements and MVP definition",
-          "version": "1.0.0",
-          "files": {
-            "AGENTS.md": "1.0.0",
-            ".agents/skills/bootstrap/SKILL.md": {
-              "version": "1.1.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
-            },
-            ".agents/skills/create-brd/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-brd/SKILL.md"
-            },
-            ".agents/specs/product.md": "1.0.0",
-            ".agents/specs/system.md": "1.0.0",
-            ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0"
-          }
-        },
-        "ux": {
-          "description": "UX design and specifications",
-          "version": "1.0.0",
-          "files": {
-            ".agents/skills/frontend-create-ux-specs/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/frontend-create-ux-specs/SKILL.md"
-            }
-          }
-        },
-        "plan": {
-          "description": "Task planning and breakdown",
-          "version": "1.0.0",
-          "files": {
-            ".agents/skills/create-plan/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-plan/SKILL.md"
-            },
-            ".agents/plans/README.md": "1.0.0"
-          }
-        },
-        "implement": {
-          "description": "Implementation, research, and version control",
-          "version": "1.0.0",
-          "files": {
-            ".agents/skills/implement-plan/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
-            },
-            ".agents/skills/analyze/SKILL.md": {
-              "version": "1.1.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
-            },
-            ".agents/skills/explore-design-options/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
-            },
-            ".agents/skills/commit-design/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
-            },
-            ".agents/skills/git-worktrees/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/git-worktrees/SKILL.md"
-            },
-            ".agents/git-worktrees/README.md": "1.0.0"
-          }
-        }
-      }
-    },
-    "backend": {
-      "description": "Backend service development workflow",
-      "version": "2.0.0",
-      "stages": {
-        "product-mvp": {
-          "description": "Product requirements and MVP definition",
-          "version": "1.0.0",
-          "files": {
-            "AGENTS.md": "1.0.0",
-            ".agents/skills/bootstrap/SKILL.md": {
-              "version": "1.1.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
-            },
-            ".agents/skills/create-brd/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-brd/SKILL.md"
-            },
-            ".agents/specs/product.md": "1.0.0",
-            ".agents/specs/system.md": "1.0.0",
-            ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0"
-          }
-        },
-        "ux": {
-          "description": "API design and data modeling",
-          "version": "1.0.0",
-          "files": {
-            ".agents/skills/backend-design-db/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/backend-design-db/SKILL.md"
-            }
-          }
-        },
-        "plan": {
-          "description": "Task planning and breakdown",
-          "version": "1.0.0",
-          "files": {
-            ".agents/skills/create-plan/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-plan/SKILL.md"
-            },
-            ".agents/plans/README.md": "1.0.0"
-          }
-        },
-        "implement": {
-          "description": "Implementation, research, and version control",
-          "version": "1.0.0",
-          "files": {
-            ".agents/skills/implement-plan/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
-            },
-            ".agents/skills/analyze/SKILL.md": {
-              "version": "1.1.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
-            },
-            ".agents/skills/explore-design-options/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
-            },
-            ".agents/skills/commit-design/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
-            },
-            ".agents/skills/git-worktrees/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/git-worktrees/SKILL.md"
-            },
-            ".agents/git-worktrees/README.md": "1.0.0"
-          }
-        }
-      }
-    },
-    "testdriven": {
-      "description": "Test-driven development workflow",
+  "description": "Version manifest for downloadable framework artifacts. Organized by modes. Used by codewiser-init.sh to detect and prompt for updates.",
+  "version": "3.0.0",
+  "modes": {
+    "prototype": {
+      "description": "Rapid prototyping — BRD, UX design, then code. No formal planning or test requirements.",
       "version": "1.0.0",
-      "stages": {
-        "product-mvp": {
-          "description": "Product requirements and MVP definition",
-          "version": "1.0.0",
-          "files": {
-            "AGENTS.md": "1.0.0",
-            ".agents/skills/bootstrap/SKILL.md": {
-              "version": "1.1.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
-            },
-            ".agents/skills/create-brd/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-brd/SKILL.md"
-            },
-            ".agents/specs/product.md": "1.0.0",
-            ".agents/specs/system.md": "1.0.0",
-            ".agents/specs/README.md": "1.0.0",
-            ".agents/specs/spec-index.json": "1.0.0"
-          }
+      "files": {
+        "AGENTS.md": "1.0.0",
+        ".agents/skills/bootstrap/SKILL.md": {
+          "version": "2.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
         },
-        "test-design": {
-          "description": "Test infrastructure, fixture, and double design",
+        ".agents/skills/git-worktrees/SKILL.md": {
           "version": "1.0.0",
-          "files": {
-            ".agents/skills/testdriven-test-infrastructure/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-infrastructure/SKILL.md"
-            },
-            ".agents/skills/testdriven-test-fixtures/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-fixtures/SKILL.md"
-            },
-            ".agents/skills/testdriven-test-doubles/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-doubles/SKILL.md"
-            }
-          }
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/git-worktrees/SKILL.md"
         },
-        "plan": {
-          "description": "Task planning and breakdown",
+        ".agents/skills/create-brd/SKILL.md": {
           "version": "1.0.0",
-          "files": {
-            ".agents/skills/create-plan/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-plan/SKILL.md"
-            },
-            ".agents/plans/README.md": "1.0.0"
-          }
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-brd/SKILL.md"
         },
-        "implement": {
-          "description": "Test-driven implementation, research, and version control",
+        ".agents/skills/frontend-create-ux-specs/SKILL.md": {
           "version": "1.0.0",
-          "files": {
-            ".agents/skills/implement-plan/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
-            },
-            ".agents/skills/analyze/SKILL.md": {
-              "version": "1.1.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
-            },
-            ".agents/skills/explore-design-options/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
-            },
-            ".agents/skills/commit-design/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
-            },
-            ".agents/skills/git-worktrees/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/git-worktrees/SKILL.md"
-            },
-            ".agents/git-worktrees/README.md": "1.0.0"
-          }
-        }
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/frontend-create-ux-specs/SKILL.md"
+        },
+        ".agents/git-worktrees/README.md": "1.0.0",
+        ".agents/specs/product.md": "1.0.0",
+        ".agents/specs/system.md": "1.0.0",
+        ".agents/specs/README.md": "1.0.0",
+        ".agents/specs/spec-index.json": "1.0.0"
+      }
+    },
+    "spec-driven": {
+      "description": "Full spec-driven development — BRD, UX/DB design, planning, design decisions, implementation, and analysis.",
+      "version": "1.0.0",
+      "files": {
+        "AGENTS.md": "1.0.0",
+        ".agents/skills/bootstrap/SKILL.md": {
+          "version": "2.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
+        },
+        ".agents/skills/git-worktrees/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/git-worktrees/SKILL.md"
+        },
+        ".agents/skills/create-brd/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-brd/SKILL.md"
+        },
+        ".agents/skills/frontend-create-ux-specs/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/frontend-create-ux-specs/SKILL.md"
+        },
+        ".agents/skills/backend-design-db/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/backend-design-db/SKILL.md"
+        },
+        ".agents/skills/create-plan/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-plan/SKILL.md"
+        },
+        ".agents/skills/explore-design-options/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
+        },
+        ".agents/skills/commit-design/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
+        },
+        ".agents/skills/implement-plan/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
+        },
+        ".agents/skills/analyze/SKILL.md": {
+          "version": "1.1.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
+        },
+        ".agents/git-worktrees/README.md": "1.0.0",
+        ".agents/plans/README.md": "1.0.0",
+        ".agents/specs/product.md": "1.0.0",
+        ".agents/specs/system.md": "1.0.0",
+        ".agents/specs/README.md": "1.0.0",
+        ".agents/specs/spec-index.json": "1.0.0"
+      }
+    },
+    "rigid": {
+      "description": "Maximal rigor — spec-driven plus test-driven development with infrastructure, fixtures, and doubles.",
+      "version": "1.0.0",
+      "files": {
+        "AGENTS.md": "1.0.0",
+        ".agents/skills/bootstrap/SKILL.md": {
+          "version": "2.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
+        },
+        ".agents/skills/git-worktrees/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/git-worktrees/SKILL.md"
+        },
+        ".agents/skills/create-brd/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-brd/SKILL.md"
+        },
+        ".agents/skills/frontend-create-ux-specs/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/frontend-create-ux-specs/SKILL.md"
+        },
+        ".agents/skills/backend-design-db/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/backend-design-db/SKILL.md"
+        },
+        ".agents/skills/create-plan/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/create-plan/SKILL.md"
+        },
+        ".agents/skills/explore-design-options/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
+        },
+        ".agents/skills/commit-design/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
+        },
+        ".agents/skills/implement-plan/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
+        },
+        ".agents/skills/analyze/SKILL.md": {
+          "version": "1.1.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
+        },
+        ".agents/skills/testdriven-test-infrastructure/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-infrastructure/SKILL.md"
+        },
+        ".agents/skills/testdriven-test-fixtures/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-fixtures/SKILL.md"
+        },
+        ".agents/skills/testdriven-test-doubles/SKILL.md": {
+          "version": "1.0.0",
+          "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-doubles/SKILL.md"
+        },
+        ".agents/git-worktrees/README.md": "1.0.0",
+        ".agents/plans/README.md": "1.0.0",
+        ".agents/specs/product.md": "1.0.0",
+        ".agents/specs/system.md": "1.0.0",
+        ".agents/specs/README.md": "1.0.0",
+        ".agents/specs/spec-index.json": "1.0.0"
       }
     }
   }

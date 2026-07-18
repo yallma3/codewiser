@@ -120,7 +120,14 @@ function Get-ManifestVersion {
     param([string]$ManifestPath, [string]$FilePath)
     if (-not (Test-Path $ManifestPath)) { return $null }
     $obj = Get-Content $ManifestPath -Raw | ConvertFrom-Json
-    if ($obj.workflows) {
+    if ($obj.modes) {
+        foreach ($mode in $obj.modes.PSObject.Properties.Value) {
+            if ($mode.files.$FilePath) {
+                return $mode.files.$FilePath
+            }
+        }
+        return $null
+    } elseif ($obj.workflows) {
         foreach ($wf in $obj.workflows.PSObject.Properties.Value) {
             foreach ($stage in $wf.stages.PSObject.Properties.Value) {
                 if ($stage.files.$FilePath) {
@@ -173,10 +180,75 @@ if (Test-Path $localManifestPath) {
     $localManifestObj = Get-Content $localManifestPath -Raw | ConvertFrom-Json
 }
 
-# Detect format and optionally prompt for workflow selection
+# Detect format and optionally prompt for mode/workflow selection
 $remoteFiles = @{}
-if ($remoteManifestObj.workflows) {
-    # --- Workflow Selection ---
+$selectedMode = ""
+
+if ($remoteManifestObj.modes) {
+    # --- Mode Selection (single choice) ---
+    $modeNames = @($remoteManifestObj.modes.PSObject.Properties.Name)
+
+    if ($modeNames.Count -eq 0) {
+        Write-Host "  !! No modes found in manifest. Aborting."
+        Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
+        exit 1
+    }
+
+    Write-Host ""
+    Write-Host "Select development mode (enter number):"
+
+    $modeDone = $false
+    while (-not $modeDone) {
+        for ($i = 0; $i -lt $modeNames.Count; $i++) {
+            $desc = $remoteManifestObj.modes.$($modeNames[$i]).description
+            $mark = " "
+            if ($selectedMode -eq $modeNames[$i]) { $mark = "x" }
+            Write-Host "  [$mark] $($i+1). $($modeNames[$i])"
+            Write-Host "       $desc"
+        }
+        Write-Host "  [ ] c) Cancel"
+        $choice = Read-Host "> "
+
+        switch ($choice) {
+            { $_ -match '^\d+$' } {
+                $idx = [int]$choice - 1
+                if ($idx -ge $modeNames.Count) {
+                    Write-Host "  Invalid choice."
+                    break
+                }
+                $selectedMode = $modeNames[$idx]
+                $modeDone = $true
+            }
+            { $_ -in "c","C" } { Write-Host "Cancelled."; Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue; exit 0 }
+            default { Write-Host "  Invalid choice." }
+        }
+    }
+
+    $modeDesc = $remoteManifestObj.modes.$selectedMode.description
+
+    Write-Host ""
+    Write-Host ">> Checking for framework updates..."
+    Write-Host "  Mode: $selectedMode — $modeDesc"
+
+    # Display skills for the selected mode
+    $modeFiles = $remoteManifestObj.modes.$selectedMode.files
+    $skills = @()
+    foreach ($entry in $modeFiles.PSObject.Properties) {
+        if ($entry.Name -like '*/SKILL.md') {
+            $skills += ($entry.Name -split '/')[-2]
+        }
+    }
+    if ($skills) {
+        Write-Host "  Skills:"
+        foreach ($s in ($skills | Sort-Object)) { Write-Host "    - $s" }
+    }
+
+    # Flatten files for this mode
+    foreach ($entry in $modeFiles.PSObject.Properties) {
+        $remoteFiles[$entry.Name] = $entry.Value
+    }
+} elseif ($remoteManifestObj.workflows) {
+    # --- Backward compatibility: legacy workflows structure (v2.x) ---
     $wfNames = @($remoteManifestObj.workflows.PSObject.Properties.Name)
     $wfSelections = @($false) * $wfNames.Count
 
@@ -218,7 +290,6 @@ if ($remoteManifestObj.workflows) {
         }
     }
 
-    # Build selected workflow indices
     $selectedIndices = @()
     $selectedNames = @()
     for ($i = 0; $i -lt $wfSelections.Count; $i++) {
@@ -228,14 +299,12 @@ if ($remoteManifestObj.workflows) {
         }
     }
 
-    # Flat skill structure: all skills directly under .agents/skills/, categorized by naming convention
     $skillDirs = @()
 
     Write-Host ""
     Write-Host ">> Checking for framework updates..."
     Write-Host "  Workflows: $($selectedNames -join ' ')"
 
-    # Display skills organized by category (naming convention: frontend-*, backend-*, else shared)
     $allFiles = @{}
     foreach ($wfName in $remoteManifestObj.workflows.PSObject.Properties.Name) {
         $wf = $remoteManifestObj.workflows.$wfName
@@ -328,6 +397,28 @@ Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
 
 # Save updated local manifest
 Download -Url "$RAW_BASE/manifest.json" -Dest $localManifestPath | Out-Null
+
+# --- Customize AGENTS.md with mode-specific Execution Protocol ---
+if ($selectedMode -and (Test-Path "$TargetDir\AGENTS.md")) {
+    $modeTitle = (Get-Culture).TextInfo.ToTitleCase(($selectedMode -replace '-', ' '))
+    $protocolHeader = "## ${modeTitle} Execution Protocol"
+
+    $agentsContent = Get-Content "$TargetDir\AGENTS.md" -Raw
+    if ($agentsContent -notmatch [regex]::Escape($protocolHeader)) {
+        Write-Host ""
+        Write-Host ">> Adding $modeTitle Execution Protocol to AGENTS.md..."
+        $protocolSection = @"
+
+$protocolHeader
+
+All file modifications or code generation tasks in this project MUST follow the
+${modeTitle} lifecycle defined below. The bootstrap skill will complete this
+section with the full protocol after initial project analysis.
+
+"@
+        Add-Content -Path "$TargetDir\AGENTS.md" -Value $protocolSection -NoNewline
+    }
+}
 
 # --- 4. Generate supplementary explicit configurations ---
 if ($use_opencode -and -not (Test-Path "$TargetDir\opencode.json")) {

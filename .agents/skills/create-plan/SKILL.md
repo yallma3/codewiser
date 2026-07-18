@@ -4,56 +4,112 @@ description: Guidelines for planning tasks and creating plans. Use when starting
 license: MIT
 ---
 
-# Planning Guidelines
+# Create Plan Guidelines
 
-## 1. Plan Requirements
+## Purpose
 
-- **Incremental**: Each phase must be completable in a single session.
-- **Verifiable per step**: Every step must have a concrete verification command.
-- **Gated**: After every step, verify gates pass (e.g., `npm run lint && npm test` or project-equivalent).
-- **Self-contained**: Include enough context for a different agent to continue.
-- **Reference tracking**: Every plan must reference the related requirement, feature, user story, bug fix, or PR that drives the work. Link to the source when possible.
-- **Status tracking**: After any work on a plan, a status file should be created or updated (handled by the implementation skill).
-- **Risk & complexity labeling**: Every phase, step, or file-change must label its risk level (low/medium/high) and complexity (low/medium/high).
+Break work into incremental, verifiable phases before implementation. Plans are saved to `.agents/plans/plan_YYMMDD_<short-name>.md` and referenced during execution.
 
-## 2. Plan Template
+## When to Use
+
+- Starting a new feature or task
+- Breaking down complex work
+- Defining clear acceptance criteria before coding
+- When a design decision has been committed and needs implementation planning
+
+## Procedure
+
+### 1. Understand the Context
+
+Read relevant specs:
+- `.agents/specs/product.md` — what the system does
+- `.agents/specs/system.md` — how the system is wired
+- `.agents/specs/ux.md` — UX requirements (if applicable)
+- Any `system_<area>.md` or `product_<brd>.md` files for the domain
+- **Design-options file (optional, but primary input if present)** — if a `commit-design` decision was made, read the design-options file (e.g., `.agents/design-options/design-option_YYMMDD_<topic>.md`) and its **Selected Option** section, especially the **Spec Update Plan**
+
+### 2. Identify Scope & Acceptance Criteria
+
+Define what is in/out of scope. Write testable acceptance criteria for each phase.
+
+**Surface assumptions and tradeoffs explicitly:**
+- State every assumption the plan depends on (e.g., "assumes auth module exists").
+- If multiple approaches exist for a phase, document the tradeoffs and why the chosen one is preferred.
+- If a simpler approach exists than what the design decision prescribes, flag it here.
+
+### 3. Break Into Phases
+
+Split work into phases that:
+- Can be verified independently
+- Have clear entry/exit criteria
+- Minimize risk early (e.g., infrastructure before features)
+
+### 4. Write the Plan
+
+Use the template below. Save as `.agents/plans/plan_YYMMDD_<short-name>.md`.
+
+### 5. Verify
+
+Confirm the plan:
+- Covers all acceptance criteria
+- Phases are independently verifiable
+- No hidden dependencies between phases
+- References spec files and design decisions
+
+## Plan Template
 
 ```markdown
-# Plan: <title> (Date: <YYMMDD>)
-- **Agent**: <tool/agent name>
-- **LLM**: <model name>
-- **Reference**: <requirement/feature/user-story/bug/PR link or description>
+---
+purpose: "<explicit purpose>"
+agent: "<agent name>"
+llm: "<model name>"
+date: "<YYMMDD>"
+design_option_ref: "<path to design-options file, e.g., .agents/design-options/design-option_YYMMDD_<topic>.md>"
+---
 
-## Goal
-Single sentence describing what this plan achieves.
+# Plan: <short name>
 
-## Current State
-What exists now, what gaps exist.
+## Context
+- **Related specs**: <links to product.md, system.md, ux.md, design-options>
+- **Design decision**: <reference to Selected Option in design-options file>
+- **Scope**: <what is in/out of scope>
+
+## Acceptance Criteria
+- [ ] <criterion 1>
+- [ ] <criterion 2>
 
 ## Phases
-### Phase N: <name>
-- **Risk**: low/medium/high
-- **Complexity**: low/medium/high
-- **Gate**: <lint + test command>
-- **Steps**:
-  - Step 1 — `[verify: <command>]`
-  - Step 2 — `[verify: <command>]`
-- **Files affected**: `path/to/file.ext`
-- **Deliverable**: What "done" looks like
 
-## Success Criteria
-- Measurable outcomes.
+### Phase 1: <name>
+- **Goal**: <what this phase achieves>
+- **Tasks**:
+  - [ ] <task 1>
+  - [ ] <task 2>
+- **Verification**: <how to verify this phase is complete>
+- **Spec updates**: <spec files to update, e.g., product.md, system.md, system_<topic>.md — per Spec Update Plan in design-options>
 
-## Risks
-- Anything that could block.
+### Phase 2: <name>
+...
 
-## Resumption Notes
-- Last completed phase:
-- Next step to start:
+## Risks & Mitigations
+- <risk>: <mitigation>
+
+## Dependencies
+- <external or cross-team dependencies>
 ```
 
-## 3. File Naming Conventions
+## Spec Updates
 
-- Plans: `plan_YYMMDD_<short-name>.md` → `.agents/plans/`
-- Status: `status_YYMMDD_<subject>.md` → `.agents/status/`
-- Never delete old plans — the implementation skill adds status reports alongside.
+When a design-options file contains a **Spec Update Plan** (added by `commit-design`), the plan should include those spec updates in the relevant phases. The `implement-plan` skill will execute the spec updates during implementation.
+
+Every plan phase that produces architectural changes must include `system.md` and any relevant `system_<topic>.md` files in its `**Spec updates**:` field. This ensures impl agents know exactly which system docs to update after verification gates pass.
+
+## Plan Naming
+
+- Format: `plan_YYMMDD_<short-name>.md`
+- Location: `.agents/plans/`
+- Never delete old plans — implementation skill adds status reports alongside.
+
+## Status Tracking
+
+Status is tracked by the `implement-plan` skill in `.agents/status/status_YYMMDD_<subject>.md`. The plan file itself remains immutable after creation.

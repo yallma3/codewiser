@@ -1,6 +1,6 @@
 ---
 name: git-worktrees
-description: Guidelines for using Git worktrees and branch management to isolate feature work in the multi-agent spec-driven workflow.
+description: Guidelines for using Git worktrees and branch management to isolate feature work in the spec-driven workflow.
 license: MIT
 ---
 
@@ -39,6 +39,7 @@ Keep feature work isolated and reviewable by using Git branches and worktrees fo
 ## Branch naming
 
 Prefer descriptive, consistent names:
+
 - `feature/<domain>-<short-name>`
 - `fix/<short-name>`
 - `research/<topic>`
