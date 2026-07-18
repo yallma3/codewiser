@@ -12,7 +12,6 @@ Once a research document has been finalized and a decision is made, the specific
 
 ## Prerequisites
 
-- A finalized research document exists at `.agents/research/research_YYMMDD_<topic>.md`
 - The decision has been reviewed and accepted
 
 ## Procedure
@@ -29,11 +28,7 @@ Update the relevant spec files to reflect the new design. Scope the changes as n
 - **`.agents/specs/system.md`** — update if the research affects architecture, component boundaries, schemas, or API contracts
 - **`.agents/specs/system_<module>.md`** — for large systems, use module-scoped spec files (e.g., `system_auth.md`, `system_api.md`) to keep changes scoped and focused
 
-Each updated spec must include a reference to the research that drove the change. Add a line such as:
-
-```markdown
-> **ADR**: [research_YYMMDD_<topic>.md](../../research/research_YYMMDD_<topic>.md)
-```
+Each updated spec must include a reference to the research that drove the change.
 
 ### 3. Update the Research Document
 
@@ -59,6 +54,5 @@ Research documents can serve as the foundation for execution plans. When creatin
 
 ## File Naming Conventions
 
-- Research: `research_YYMMDD_<topic>.md` → `.agents/research/`
 - Plans: `plan_YYMMDD_<short-name>.md` → `.agents/plans/`
 - Status: `status_YYMMDD_<subject>.md` → `.agents/status/`

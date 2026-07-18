@@ -1,126 +1,164 @@
 ---
 name: analyze
-description: Guidelines for producing architectural decision records (ADRs). Use when investigating a new feature, bug fix, or refactor to document context, alternatives, and the selected approach.
+description: Guidelines for reverse engineering a codebase to document how a specific functionality works — its architecture, contracts, interfaces, data flow, and component interactions. Use when updating the project specs, debugging a complex feature, or producing a system reference for future planning for new Module or Feature.
 license: MIT
 ---
 
-# Research Guidelines
+# Reverse Engineering Guidelines
 
 ## Purpose
 
-Research documents capture **why** architectural decisions were made. They serve as the long-term memory of the project — answering "why this way?" months later.
+Reverse engineering documents capture **how a specific functionality actually works** in the current codebase and **keep that understanding in sync** as the system evolves. They serve as the project's living map — answering "how does this feature work from entry to exit?" for both human readers and agents. When no specific topic is given, the agent should analyze recent changes and determine whether a new `system_<topic>.md` spec is needed or an existing one should be updated. The analysis is either about a how-it-works or a module.
 
-## When to Create Research
+## When to Create a Reverse Engineering Document
 
-Before making any non-trivial change — adding a feature, fixing a complex bug, or refactoring — create a research document when:
+Create a reverse engineering analysis when:
 
-- The change affects multiple components or interfaces
-- The change introduces a new dependency or technology
-- There are multiple valid approaches with different trade-offs
-- The change may have side effects on existing behavior
-- The decision is irreversible or costly to undo
+- Documenting and updating specs for future reference
+- Planning a change that modifies or extends existing behavior
+- Onboarding to a new module or unfamiliar area of the codebase
+- Debugging a subtle or cross-cutting bug
+- Extracting contracts and interfaces for test doubles or mocks
 
-## Research Procedure
+## Procedure
 
-### 1. Reference
+### 1. Scope
 
-Every research document must reference the related requirement, bug fix, feature request, or call for change that drives it. Link to the source (plan, issue, PR) when possible.
+Define the functionality or subsystem under analysis. State what is being analyzed and, equally important, what is out of scope.
 
-### 2. Current Architecture
+### 2. Entry Points
 
-Describe the current architecture **limited to the scope of the change**. Include:
+Identify every **entry point** into the functionality:
 
-- **Components involved** — which modules, services, or packages are affected
-- **Internal interfaces** — functions, APIs, events, or data structures within the system
-- **External interfaces** — third-party services, APIs, databases, or libraries consumed
-- **Call sites** — where the relevant code is invoked (entry points, consumers)
-- **Targets** — where the code produces its effect (outputs, side effects, persisted data)
+- Public APIs (REST endpoints, CLI commands, event handlers, library exports)
+- UI components or screens that trigger the flow
+- Scheduled jobs, cron triggers, or background workers
+- Test entry points (factories, test helpers)
 
-Be concise. Focus only on what is relevant to the decision at hand.
+### 3. Data Flow Trace
 
-### 3. Alternatives & Options
+Trace the execution path from an entry point through the system:
 
-List the viable approaches considered. For each alternative, document:
+- **Call chain** — sequence of function/method calls, ordered by invocation
+- **Data transformations** — how data is shaped, validated, enriched, or serialized at each step
+- **Branching logic** — conditionals, feature flags, or configuration that alter the path
+- **Error paths** — what happens when something fails at each step (exceptions, fallbacks, retries)
 
-- **Approach** — brief description of how it works
-- **Pros** — advantages relevant to this project
-- **Cons** — disadvantages, trade-offs, risks
-- **Fit** — how well it aligns with the existing architecture
+### 4. Components & Responsibilities
 
-When evaluating dependencies or technology stack changes, apply these criteria in order:
+List every component involved and its specific responsibility:
 
-1. **Least dependencies** — prefer packages with minimal transitive dependencies
-2. **Least footprint** — prefer smaller bundles, fewer runtime overheads
-3. **Purpose-specific** — prefer libraries focused on the exact problem (avoid Swiss-army-knife packages)
-4. **Version conflict free** — verify compatibility with existing dependency tree; prefer packages that don't require upgrading/downgrading shared dependencies
-5. **Maintenance** — prefer actively maintained, widely adopted packages with good documentation
+- **Modules/packages** — file paths and their role in this functionality
+- **Classes/structs** — key types and their methods relevant to the flow
+- **State machines** — if applicable, the states and transitions
 
-### 4. Decision & Solution Selection
+### 5. Interfaces & Contracts
 
-Document the chosen approach and the rationale:
+Document every interface boundary crossed:
 
-- **Selected option** — which alternative was chosen
-- **Rationale** — why this option was selected over others (reference specific pros/cons)
-- **Rejected alternatives** — briefly note why each was not chosen
-- **Impact** — what changes are expected (components to modify, new files, migrations, etc.)
-- **Risks** — known risks, open questions, or follow-up work
+- **Internal interfaces** — function signatures, abstract classes, traits, or protocols; the contracts they enforce (preconditions, postconditions, invariants)
+- **External interfaces** — HTTP endpoints consumed, database queries, message queue topics, file I/O; include the schema or shape of data
+- **Shared data structures** — types, DTOs, or records passed between components; include field meanings where not obvious
 
-## Research Template
+### 6. Dependencies
+
+List external dependencies specific to this functionality:
+
+- **Libraries/packages** — and which part of the flow uses them
+- **Services** — external APIs, databases, caches, or queues
+- **Configuration** — environment variables, feature flags, or settings that affect behavior
+
+### 7. Tests & Verification
+
+Document how the functionality is tested:
+
+- **Test types** — unit, integration, e2e, snapshot
+- **Key test files** — paths and what they cover
+- **Test doubles** — what is mocked/stubbed and why
+- **Coverage gaps** — areas without test coverage
+
+### 8. Update Spec Index
+
+Register the analysis in `.agents/specs/spec-index.json`:
+
+- If creating a **new** `system_<topic>.md`, add an entry with the file path, topic, type (how-it-works | module), and date.
+- If **updating** an existing spec, bump the version or update the date to reflect the revision.
+
+## Reverse Engineering Template
 
 ```markdown
-# Research: <title> (Date: <YYMMDD>)
-- **Reference**: <requirement/bug/feature/call-for-change link or description>
+# System Analysis: <feature/subsystem name> (Date: <YYMMDD>)
 
-## Current Architecture
-- **Components involved**:
-- **Internal interfaces**:
-- **External interfaces**:
-- **Call sites**:
-- **Targets**:
+## Scope
 
-## Alternatives & Options
+- **Analyzed functionality**:
+- **Out of scope**:
 
-### Option A: <name>
-- **Approach**:
-- **Pros**:
-- **Cons**:
-- **Fit**:
+## Entry Points
 
-### Option B: <name>
-- **Approach**:
-- **Pros**:
-- **Cons**:
-- **Fit**:
+- **API / UI / CLI**:
+- **Background triggers**:
+- **Tests**:
 
-## Decision
-- **Selected option**:
-- **Rationale**:
-- **Rejected alternatives**:
-- **Impact**:
-- **Risks**:
+## Data Flow Trace
+```
+
+<entry> → <component A> → <component B> → ... → <output>
+
+```
+
+### Step-by-step
+1. <step description> — file:path:line
+2. <step description> — file:path:line
+...
+
+### Error paths
+- <failure mode> → <handling behavior>
+
+## Components & Responsibilities
+| Component | Path | Responsibility |
+|-----------|------|----------------|
+|           |      |                |
+
+## Interfaces & Contracts
+### Internal Interfaces
+| Interface / Function | Contract | Callers |
+|----------------------|----------|---------|
+|                      |          |         |
+
+### External Interfaces
+| System | Operation | Schema / Shape |
+|--------|-----------|----------------|
+|        |           |                |
+
+### Shared Data Structures
+| Type | Fields | Notes |
+|------|--------|-------|
+|      |        |       |
+
+## Dependencies
+| Dependency | Usage | Configuration |
+|------------|-------|---------------|
+|            |       |               |
+
+## Tests & Verification
+| Test File | Type | Coverage |
+|-----------|------|----------|
+|           |      |          |
+
+### Coverage gaps
+- <gap description>
 ```
 
 ## Best Practices
 
-- **Write for your future self** — assume the reader has no context. Explain acronyms, reference links, and spell out trade-offs.
-- **One decision per document** — if a change involves multiple independent decisions, create separate research files.
+- **Trace, don't assume** — verify each step by reading the actual code, not by guessing. Cite file paths and line numbers.
+- **One feature per document** — each document covers a single cohesive functionality. Split if the flow branches into independent subsystems.
 - **Date everything** — use YYMMDD format so files sort chronologically.
-- **Update on reversal** — if a decision is later reversed, create a new research document superseding the old one. Don't modify historical records.
-- **Keep research read-only after acceptance** — once a decision is made and implementation starts, the research document is a historical record. Do not edit it to reflect new decisions; create a new document instead.
-
-## Workflow Integration
-
-```
-design-thinking ──> analyze ──> commit-design
-(generate options)   (document ADR)   (record decision)
-```
-
-1. **design-thinking** — generate solution options (Option A, B, C...) using design thinking methodology
-2. **analyze** (this skill) — produce the full ADR with current architecture, alternatives, and the user's selected option
-3. **commit-design** — record the decision in git and update spec files
+- **Update on significant changes** — when the implementation of the analyzed functionality changes substantially, update the document rather than creating a new one. It is a living reference.
+- **Include line numbers** — reference specific lines for interfaces, contracts, and branching logic to make verification fast.
+- **Update system.md** - consider if system.md should refer to the added analysis, but keep it in the high level.
 
 ## File Naming Conventions
 
-- Research: `research_YYMMDD_<topic>.md` → `.agents/research/`
-- Plans: `plan_YYMMDD_<short-name>.md` → `.agents/plans/`
-- Status: `status_YYMMDD_<subject>.md` → `.agents/status/`
+- Research: `system_YYMMDD_<how-it-works-topic or module-name>.md` → `.agents/specs/`

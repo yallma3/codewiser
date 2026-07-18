@@ -55,6 +55,5 @@ What exists now, what gaps exist.
 ## 3. File Naming Conventions
 
 - Plans: `plan_YYMMDD_<short-name>.md` → `.agents/plans/`
-- Research: `research_YYMMDD_<topic>.md` → `.agents/research/`
 - Status: `status_YYMMDD_<subject>.md` → `.agents/status/`
 - Never delete old plans — the implementation skill adds status reports alongside.

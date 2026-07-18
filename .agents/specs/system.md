@@ -35,4 +35,3 @@ The `manifest.json` defines which files belong to each workflow. The setup scrip
 - `.agents/skills/<skill-name>/` — Skill definitions (SKILL.md files)
 - `.agents/specs/` — Product and system specifications
 - `.agents/plans/` — Task execution plans
-- `.agents/research/` — Architecture Decision Records (ADRs)

@@ -20,7 +20,7 @@ After completing the **analyze** ADR and the user has explicitly chosen an optio
 Ensure the user has selected a specific option (A, B, etc.) before proceeding.
 
 ### 2. Finalize the ADR
-Ensure the ADR research document (`.agents/research/research_YYMMDD_<topic>.md`) is complete with:
+Ensure the ADR research document is complete with:
 - **Decision section** filled: selected option, rationale, rejected alternatives, impact, risks
 - A reference to the user's explicit choice
 
@@ -36,7 +36,6 @@ Each update should include a reference back to the research document.
 ### 4. Commit the Decision
 ```bash
 # Stage all changes
-git add .agents/research/research_YYMMDD_<topic>.md
 git add .agents/specs/  # any updated spec files
 
 # Commit with a descriptive message
@@ -45,9 +44,7 @@ git commit -m "docs: record design decision for <topic>
 - Researched alternatives using analyze skill
 - Generated options using design-thinking skill
 - Selected: <option> - <name>
-- Rationale: <brief rationale>
-
-Reference: .agents/research/research_YYMMDD_<topic>.md"
+- Rationale: <brief rationale>"
 ```
 
 ### 5. Verify

@@ -7,7 +7,6 @@ Project-specific scripts, technology choices, and setup instructions are documen
 - `.agents/skills/` — What the agents can do (Commands/Capabilities).
 - `.agents/specs/` — What the agents are building (System & Product Architecture).
 - `.agents/plans/` — How the agents will execute the current task (Short-term context).
-- `.agents/research/` — Why the architectural decisions were made (Long-term engineering notes).
 
 ## Spec-Driven Execution Protocol
 
@@ -25,12 +24,6 @@ All file modifications or code generation tasks MUST follow this lifecycle:
 4. **Create UX Specs** — Define design system, personas, and UX requirements in `ux.md`.
 5. **Design DB** — Design relational schemas based on volumetric data; document in `system.md`.
 
-### For Complex Decisions
-1. **Research** — Produce an ADR (`.agents/research/research_YYMMDD_<topic>.md`)
-   documenting context, alternatives, and the selected approach.
-2. **Commit Research** — Update relevant spec files (`product.md`, `system.md`,
-   `system_<module>.md`) with a reference back to the research document.
-
 ### Execution (per task)
 1. **Create Plan** — Break work into incremental, verifiable phases
    (`.agents/plans/plan_YYMMDD_<name>.md`).
@@ -44,5 +37,4 @@ first before writing production code.
 
 ## File Naming Conventions
 - Plans: `plan_YYMMDD_<short-name>.md` → `.agents/plans/`
-- Research: `research_YYMMDD_<topic>.md` → `.agents/research/`
 - Status: `status_YYMMDD_<subject>.md` → `.agents/status/`

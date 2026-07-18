@@ -153,8 +153,7 @@ echo ""
 echo "📁 Creating folder architecture..."
 mkdir -p "$TARGET_DIR/.agents/skills" \
          "$TARGET_DIR/.agents/specs" \
-         "$TARGET_DIR/.agents/plans" \
-         "$TARGET_DIR/.agents/research"
+         "$TARGET_DIR/.agents/plans"
 
 $use_claude && mkdir -p "$TARGET_DIR/.claude"
 $use_cursor && mkdir -p "$TARGET_DIR/.cursor"

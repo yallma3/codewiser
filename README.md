@@ -72,8 +72,7 @@ On Windows (PowerShell):
 1. **Read specs** — Before writing code, agents read `.agents/specs/product.md` and `.agents/specs/system.md`
 2. **Git Worktrees first** — Create an isolated feature branch/worktree before planning and spec changes (see [git-worktrees skill](.agents/skills/shared/git-worktrees/SKILL.md))
 3. **Update specs first** — If an implementation changes the design, update specs before writing production code
-4. **Document decisions** — Architecture rationale goes in `.agents/research/` as ADRs
-5. **Plan execution** — Task breakdowns go in `.agents/plans/` (naming: `plan_YYMMDD_<name>.md`)
+4. **Plan execution** — Task breakdowns go in `.agents/plans/` (naming: `plan_YYMMDD_<name>.md`)
 
 ## Adding a New Skill
 
