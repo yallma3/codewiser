@@ -159,7 +159,7 @@ Write-Host ">> Fetching available workflows..."
 $localManifestPath = "$TargetDir\.agents\manifest.json"
 $remoteManifest = New-TemporaryFile
 
-$manifestOk = Download -Url "$RAW_BASE/manifest.json" -Dest $remoteManifest.FullName
+$manifestOk = Download -Url "$RAW_BASE/.agents/manifest.json" -Dest $remoteManifest.FullName
 if (-not $manifestOk) {
     Write-Host "  !! Failed to download remote manifest. Aborting."
     Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
