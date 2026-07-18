@@ -30,7 +30,16 @@ Explore the repository to understand:
 - Existing tests, lint/typecheck setup, build scripts
 - Any existing documentation or config files
 
-### 2. Ask Questions for Gaps
+### 2. Discover Existing Analysis Specs
+
+Scan `.agents/specs/` for `system_*.md` files. If any exist:
+
+- **Index in `system.md`** — Add a line for each analysis: `- <topic> — \`system_<area>.md\``
+- **Register in `spec-index.json`** — Add an entry with the file path, topic, type, and date. If `spec-index.json` doesn't exist, create it first.
+
+This ensures analysis work done before bootstrap is properly tracked in the shared index.
+
+### 3. Ask Questions for Gaps
 
 After exploring, ask the user about anything important that is not clearly specified or discoverable from the codebase. For example:
 
@@ -42,7 +51,7 @@ After exploring, ask the user about anything important that is not clearly speci
 
 Only ask about what matters — skip questions where the answer is already clear from the codebase. The goal is to fill in unknowns, not to checklist every field.
 
-### 3. Populate or Enrich `README.md`
+### 4. Populate or Enrich `README.md`
 
 If `README.md` is missing or sparse:
 - Add a project description and purpose
@@ -53,20 +62,20 @@ If `README.md` is missing or sparse:
 
 If `README.md` already exists, enrich it with any missing sections discovered during exploration.
 
-### 4. Populate or Enrich `.agents/specs/product.md`
+### 5. Populate or Enrich `.agents/specs/product.md`
 
 - Derive user stories, features, and acceptance criteria from code exploration and user answers
 - Document known entry points, configuration, and user-facing behavior
 - If a `product.md` already exists, update it to reflect any newly discovered aspects
 
-### 5. Populate or Enrich `.agents/specs/system.md`
+### 6. Populate or Enrich `.agents/specs/system.md`
 
 - Document the architecture: major components and their responsibilities
 - Map out schemas, data models, key interfaces
 - Document external integrations and API contracts
 - If a `system.md` already exists, update it to reflect any newly discovered aspects
 
-### 6. Verify
+### 7. Verify
 
 - Reread the updated files to confirm they accurately represent the project
 - Ensure no placeholder content remains (e.g., "Describe the high-level system architecture here")

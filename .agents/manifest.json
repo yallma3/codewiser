@@ -13,7 +13,7 @@
           "files": {
             "AGENTS.md": "1.0.0",
             ".agents/skills/bootstrap/SKILL.md": {
-              "version": "1.0.0",
+              "version": "1.1.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
             },
             ".agents/skills/create-brd/SKILL.md": {
@@ -56,20 +56,16 @@
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
             },
             ".agents/skills/analyze/SKILL.md": {
-              "version": "1.0.0",
+              "version": "1.1.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
             },
-            ".agents/skills/design-thinking/SKILL.md": {
+            ".agents/skills/explore-design-options/SKILL.md": {
               "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/design-thinking/SKILL.md"
+              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
             },
             ".agents/skills/commit-design/SKILL.md": {
               "version": "1.0.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
-            },
-            ".agents/skills/commit-research/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-research/SKILL.md"
             },
             ".agents/skills/git-worktrees/SKILL.md": {
               "version": "1.0.0",
@@ -90,7 +86,7 @@
           "files": {
             "AGENTS.md": "1.0.0",
             ".agents/skills/bootstrap/SKILL.md": {
-              "version": "1.0.0",
+              "version": "1.1.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
             },
             ".agents/skills/create-brd/SKILL.md": {
@@ -133,20 +129,16 @@
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
             },
             ".agents/skills/analyze/SKILL.md": {
-              "version": "1.0.0",
+              "version": "1.1.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
             },
-            ".agents/skills/design-thinking/SKILL.md": {
+            ".agents/skills/explore-design-options/SKILL.md": {
               "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/design-thinking/SKILL.md"
+              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
             },
             ".agents/skills/commit-design/SKILL.md": {
               "version": "1.0.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
-            },
-            ".agents/skills/commit-research/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-research/SKILL.md"
             },
             ".agents/skills/git-worktrees/SKILL.md": {
               "version": "1.0.0",
@@ -167,7 +159,7 @@
           "files": {
             "AGENTS.md": "1.0.0",
             ".agents/skills/bootstrap/SKILL.md": {
-              "version": "1.0.0",
+              "version": "1.1.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/bootstrap/SKILL.md"
             },
             ".agents/skills/create-brd/SKILL.md": {
@@ -218,20 +210,16 @@
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/implement-plan/SKILL.md"
             },
             ".agents/skills/analyze/SKILL.md": {
-              "version": "1.0.0",
+              "version": "1.1.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
             },
-            ".agents/skills/design-thinking/SKILL.md": {
+            ".agents/skills/explore-design-options/SKILL.md": {
               "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/design-thinking/SKILL.md"
+              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/explore-design-options/SKILL.md"
             },
             ".agents/skills/commit-design/SKILL.md": {
               "version": "1.0.0",
               "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-design/SKILL.md"
-            },
-            ".agents/skills/commit-research/SKILL.md": {
-              "version": "1.0.0",
-              "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/commit-research/SKILL.md"
             },
             ".agents/skills/git-worktrees/SKILL.md": {
               "version": "1.0.0",

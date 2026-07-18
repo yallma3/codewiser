@@ -8,7 +8,15 @@ license: MIT
 
 ## Purpose
 
-Reverse engineering documents capture **how a specific functionality actually works** in the current codebase and **keep that understanding in sync** as the system evolves. They serve as the project's living map — answering "how does this feature work from entry to exit?" for both human readers and agents. When no specific topic is given, the agent should analyze recent changes and determine whether a new `system_<topic>.md` spec is needed or an existing one should be updated. The analysis is either about a how-it-works or a module.
+Reverse engineering documents capture **how a specific functionality actually works** in the current codebase and **keep that understanding in sync** as the system evolves. They serve as the project's living map — answering "how does this feature work from entry to exit?" for both human readers and agents. The analysis is either about a how-it-works or a module.
+
+### Unscoped Invocation
+
+When the skill is invoked **without an explicit scope**, the agent MUST:
+
+1. **Default to full reverse engineering** — treat the entire codebase or the most recent substantive change as the subject, performing a complete trace (Procedure steps 1–8).
+2. **Perform a consistency audit** — compare the traced behavior against all existing system specs (`system.md` and all `system_<area>.md` files in `.agents/specs/`). Flag any discrepancies between the documented spec and actual implementation.
+3. **Print assumptions** — before executing, output a clear statement of what the agent assumed as the scope, entry points, and any delimiters applied (e.g., "No scope was provided. Assuming analysis of the full authentication flow based on recent commits A..B. Excluding test helpers and CI scripts."). This gives the user a chance to correct before work begins.
 
 ## When to Create a Reverse Engineering Document
 
@@ -19,6 +27,15 @@ Create a reverse engineering analysis when:
 - Onboarding to a new module or unfamiliar area of the codebase
 - Debugging a subtle or cross-cutting bug
 - Extracting contracts and interfaces for test doubles or mocks
+
+## Preflight Check
+
+Before beginning analysis, verify that the shared context files exist:
+- `README.md` — project overview, setup, and scripts
+- `system.md` — architecture index
+- `spec-index.json` — spec registration index
+
+If any are missing, print a message recommending that the [bootstrap](../bootstrap/SKILL.md) skill be run first to initialize the shared context. The analysis can proceed regardless; step 9 will create minimal versions of any missing files.
 
 ## Procedure
 
@@ -77,40 +94,79 @@ Document how the functionality is tested:
 - **Test doubles** — what is mocked/stubbed and why
 - **Coverage gaps** — areas without test coverage
 
-### 8. Update Spec Index
+### 8. Demonstration
 
-Register the analysis in `.agents/specs/spec-index.json`:
+Provide a concrete, executable demonstration of the system executing through the traced components. Include at least one of the following, ordered by preference:
 
-- If creating a **new** `system_<topic>.md`, add an entry with the file path, topic, type (how-it-works | module), and date.
-- If **updating** an existing spec, bump the version or update the date to reflect the revision.
+1. **Existing test case** — reference a specific test file and explain how it exercises the entry-to-exit flow. (Preferred)
+2. **New test case** — write an inline test that exercises the happy path and at least one error path.
+3. **cURL commands** — precise HTTP requests with headers, body, and expected responses; include instructions to run them.
+4. **Demo input data** — sample payloads, configs, or CLI invocations with expected output.
+5. **Diagram** — ASCII art or Mermaid sequence/flow diagram showing component interactions.
+
+The demonstration must make the abstract data flow (Step 3) concrete: a reader should be able to run it and observe the behavior described.
+
+### 9. Save Document and Update Spec Index
+
+Save the completed analysis to `.agents/specs/system_YYMMDD_<topic>.md`, then register it in `.agents/specs/spec-index.json`:
+
+- If `system.md` or `spec-index.json` do not exist, create them with minimal structure:
+  - `spec-index.json`: `{ "$schema": "spec-index.json", "description": "Maps source files to their test suites and functional specs.", "entries": [] }`
+  - `system.md`: A lightweight architecture index with a line referencing this analysis.
+- If creating a **new** spec, add an entry with the file path, topic, type (how-it-works | module), and date.
+- If **updating** an existing spec, save to the same file path and update the date in both the document and the index entry.
+- Keep `system.md` as a lightweight index — add exactly one line per analysis: `- <topic> — \`system_<area>.md\``. This lets agents load only the specialized spec they need.
+
+### 10. Validation
+
+Before finalizing, verify the analysis is correct:
+
+1. **Trace audit** — re-read your own document and trace at least one entry point end-to-end, confirming every cited file:path:line exists and the call chain is accurate.
+2. **Spec diff** — check each `system_<area>.md` referenced in your index entry; confirm no discrepancy between spec and implementation went unremarked.
+3. **Demo run** — if you provided a test case or cURL command, execute it (or simulate execution with a clear trace of inputs and outputs) and confirm the output matches what the document describes.
+4. **Cross-check** — ensure the purpose in the YAML header matches what was actually analyzed.
+
+### Definition of Done
+
+All must pass:
+
+- [ ] YAML header (purpose, agent, llm, date)
+- [ ] Scope defined (in/out)
+- [ ] Entry points identified
+- [ ] Data flow traced with file:path:line citations
+- [ ] Components, interfaces, dependencies documented
+- [ ] Tests and coverage gaps recorded
+- [ ] Demonstration provided
+- [ ] Spec index updated
+- [ ] Validation performed (or discrepancies flagged)
+- [ ] Unscoped assumptions printed (if applicable)
 
 ## Reverse Engineering Template
 
 ```markdown
-# System Analysis: <feature/subsystem name> (Date: <YYMMDD>)
+---
+purpose: "<explicit purpose>"
+agent: "<agent name>"
+llm: "<model name>"
+date: "<YYMMDD>"
+---
+
+# System Analysis: <feature/subsystem name>
 
 ## Scope
-
 - **Analyzed functionality**:
 - **Out of scope**:
 
 ## Entry Points
-
 - **API / UI / CLI**:
 - **Background triggers**:
 - **Tests**:
 
 ## Data Flow Trace
-```
-
 <entry> → <component A> → <component B> → ... → <output>
 
-```
-
 ### Step-by-step
-1. <step description> — file:path:line
-2. <step description> — file:path:line
-...
+1. <step> — file:path:line
 
 ### Error paths
 - <failure mode> → <handling behavior>
@@ -118,47 +174,31 @@ Register the analysis in `.agents/specs/spec-index.json`:
 ## Components & Responsibilities
 | Component | Path | Responsibility |
 |-----------|------|----------------|
-|           |      |                |
 
 ## Interfaces & Contracts
 ### Internal Interfaces
-| Interface / Function | Contract | Callers |
-|----------------------|----------|---------|
-|                      |          |         |
+| Interface | Contract | Callers |
+|-----------|----------|---------|
 
 ### External Interfaces
-| System | Operation | Schema / Shape |
-|--------|-----------|----------------|
-|        |           |                |
+| System | Operation | Schema |
+|--------|-----------|--------|
 
 ### Shared Data Structures
 | Type | Fields | Notes |
 |------|--------|-------|
-|      |        |       |
 
 ## Dependencies
 | Dependency | Usage | Configuration |
 |------------|-------|---------------|
-|            |       |               |
 
 ## Tests & Verification
 | Test File | Type | Coverage |
 |-----------|------|----------|
-|           |      |          |
 
 ### Coverage gaps
 - <gap description>
+
+## Demonstration
+<concrete runnable demo — test case, curl, input data, or diagram>
 ```
-
-## Best Practices
-
-- **Trace, don't assume** — verify each step by reading the actual code, not by guessing. Cite file paths and line numbers.
-- **One feature per document** — each document covers a single cohesive functionality. Split if the flow branches into independent subsystems.
-- **Date everything** — use YYMMDD format so files sort chronologically.
-- **Update on significant changes** — when the implementation of the analyzed functionality changes substantially, update the document rather than creating a new one. It is a living reference.
-- **Include line numbers** — reference specific lines for interfaces, contracts, and branching logic to make verification fast.
-- **Update system.md** - consider if system.md should refer to the added analysis, but keep it in the high level.
-
-## File Naming Conventions
-
-- Research: `system_YYMMDD_<how-it-works-topic or module-name>.md` → `.agents/specs/`

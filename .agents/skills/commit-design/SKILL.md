@@ -8,7 +8,7 @@ license: MIT
 
 ## Purpose
 
-After the **design-thinking** skill produces options and the user selects one, this skill formally records the decision — committing it to version control and bridging the ADR into actionable specifications.
+After the **explore-design-options** skill produces options and the user selects one, this skill formally records the decision — committing it to version control and bridging the ADR into actionable specifications.
 
 ## When to Use
 
@@ -42,7 +42,7 @@ git add .agents/specs/  # any updated spec files
 git commit -m "docs: record design decision for <topic>
 
 - Researched alternatives using analyze skill
-- Generated options using design-thinking skill
+- Generated options using explore-design-options skill
 - Selected: <option> - <name>
 - Rationale: <brief rationale>"
 ```
@@ -54,7 +54,7 @@ git commit -m "docs: record design decision for <topic>
 ## Workflow Integration
 
 ```
-design-thinking ──> analyze ──> commit-design
+explore-design-options ──> analyze ──> commit-design
 (generate options)   (document ADR)   (record decision)
 ```
 
