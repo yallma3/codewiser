@@ -89,23 +89,26 @@ with open('$manifest') as f:
 if 'modes' in d:
     for mode in d['modes'].values():
         if '$path' in mode.get('files', {}):
-            print(mode['files']['$path'])
+            v = mode['files']['$path']
+            print(v if isinstance(v, str) else v.get('version', '0.0.0'))
             sys.exit(0)
 elif 'workflows' in d:
     for wf in d['workflows'].values():
         for stage in wf.get('stages', {}).values():
             if '$path' in stage.get('files', {}):
-                print(stage['files']['$path'])
+                v = stage['files']['$path']
+                print(v if isinstance(v, str) else v.get('version', '0.0.0'))
                 sys.exit(0)
 elif 'files' in d and '$path' in d['files']:
-    print(d['files']['$path'])
+    v = d['files']['$path']
+    print(v if isinstance(v, str) else v.get('version', '0.0.0'))
 " 2>/dev/null
     fi
 }
 
 # --- Helper: compare two dot-separated version strings (returns 0 if v1 < v2) ---
 version_lt() {
-    printf '%s\n' "$1" "$2" | sort -V | head -1 | grep -qxF "$1"
+    [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n 1)" != "$2" ]
 }
 
 # --- Agent Selection (checkbox-style) ---
