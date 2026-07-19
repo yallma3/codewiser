@@ -439,20 +439,21 @@ for path in "${REMOTE_PATHS[@]}"; do
         echo "  >> $path (new)"
         download "$url" "$dest" || echo "  !! Failed to download $path"
     else
-        local_ver=$(get_manifest_version "$LOCAL_MANIFEST" "$path")
-        [ -z "$local_ver" ] && local_ver="0.0.0"
-
-        if version_lt "$local_ver" "$remote_ver"; then
-            echo "  >> $path ($local_ver -> $remote_ver)"
-            read -p "    Overwrite? [y/N] " answer
-            if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-                download "$url" "$dest" || echo "  !! Failed to download $path"
-            else
-                echo "    Skipped."
+        if [[ "$path" == */SKILL.md ]]; then
+            local_ver=$(get_manifest_version "$LOCAL_MANIFEST" "$path")
+            [ -z "$local_ver" ] && local_ver="0.0.0"
+            if version_lt "$local_ver" "$remote_ver"; then
+                echo "  >> $path ($local_ver -> $remote_ver)"
+                read -p "    Overwrite? [y/N] " answer
+                if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+                    download "$url" "$dest" || echo "  !! Failed to download $path"
+                else
+                    echo "    Skipped."
+                fi
+                continue
             fi
-        else
-            echo "     $path (up to date)"
         fi
+        echo "     $path (up to date)"
     fi
 done
 
