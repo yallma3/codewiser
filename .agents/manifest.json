@@ -24,9 +24,7 @@
           "version": "1.0.0",
           "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/frontend-create-ux-specs/SKILL.md"
         },
-        ".agents/git-worktrees/README.md": "1.0.0",
         ".agents/specs/product.md": "1.0.0",
-        ".agents/specs/system.md": "1.0.0",
         ".agents/specs/README.md": "1.0.0",
         ".agents/specs/spec-index.json": "1.0.0"
       }
@@ -76,10 +74,8 @@
           "version": "1.1.0",
           "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/analyze/SKILL.md"
         },
-        ".agents/git-worktrees/README.md": "1.0.0",
         ".agents/plans/README.md": "1.0.0",
         ".agents/specs/product.md": "1.0.0",
-        ".agents/specs/system.md": "1.0.0",
         ".agents/specs/README.md": "1.0.0",
         ".agents/specs/spec-index.json": "1.0.0"
       }
@@ -141,10 +137,8 @@
           "version": "1.0.0",
           "source": "https://raw.githubusercontent.com/yallma3/codewiser/main/.agents/skills/testdriven-test-doubles/SKILL.md"
         },
-        ".agents/git-worktrees/README.md": "1.0.0",
         ".agents/plans/README.md": "1.0.0",
         ".agents/specs/product.md": "1.0.0",
-        ".agents/specs/system.md": "1.0.0",
         ".agents/specs/README.md": "1.0.0",
         ".agents/specs/spec-index.json": "1.0.0"
       }

@@ -254,7 +254,8 @@ if skills:
 mode = d.get('modes', {}).get('$SELECTED_MODE', {})
 files = mode.get('files', {})
 for path, ver in files.items():
-    print(path + '|' + ver)
+    v = ver if isinstance(ver, str) else ver.get('version', '0.0.0')
+    print(path + '|' + v)
 ")
 
     REMOTE_PATHS=()
@@ -388,7 +389,8 @@ for idx in selected:
         for fpath, fver in stage.get('files', {}).items():
             files[fpath] = fver
 for path, ver in files.items():
-    print(path + '|' + ver)
+    v = ver if isinstance(ver, str) else ver.get('version', '0.0.0')
+    print(path + '|' + v)
 ")
 
     REMOTE_PATHS=()
