@@ -115,7 +115,7 @@ function Version-Lt {
     return $false
 }
 
-# --- Helper: get version for a file path from local manifest ---
+# --- Helper: get version string for a file path from local manifest ---
 function Get-ManifestVersion {
     param([string]$ManifestPath, [string]$FilePath)
     if (-not (Test-Path $ManifestPath)) { return $null }
@@ -123,7 +123,8 @@ function Get-ManifestVersion {
     if ($obj.modes) {
         foreach ($mode in $obj.modes.PSObject.Properties.Value) {
             if ($mode.files.$FilePath) {
-                return $mode.files.$FilePath
+                $v = $mode.files.$FilePath
+                return (Extract-Version $v)
             }
         }
         return $null
@@ -131,15 +132,23 @@ function Get-ManifestVersion {
         foreach ($wf in $obj.workflows.PSObject.Properties.Value) {
             foreach ($stage in $wf.stages.PSObject.Properties.Value) {
                 if ($stage.files.$FilePath) {
-                    return $stage.files.$FilePath
+                    $v = $stage.files.$FilePath
+                    return (Extract-Version $v)
                 }
             }
         }
         return $null
     } elseif ($obj.files) {
-        return $obj.files.$FilePath
+        return (Extract-Version $obj.files.$FilePath)
     }
     return $null
+}
+
+function Extract-Version {
+    param([object]$Value)
+    if ($Value -is [string]) { return $Value }
+    if ($Value.version) { return $Value.version }
+    return "0.0.0"
 }
 
 # --- Helper: flatten selected workflows into a file dictionary ---
@@ -152,7 +161,7 @@ function Flatten-WorkflowFiles {
         $wf = $ManifestObj.workflows.$wfName
         foreach ($stage in $wf.stages.PSObject.Properties.Value) {
             foreach ($entry in $stage.files.PSObject.Properties) {
-                $files[$entry.Name] = $entry.Value
+                $files[$entry.Name] = Extract-Version $entry.Value
             }
         }
     }
@@ -243,9 +252,9 @@ if ($remoteManifestObj.modes) {
         foreach ($s in ($skills | Sort-Object)) { Write-Host "    - $s" }
     }
 
-    # Flatten files for this mode
+    # Flatten files for this mode (extract version strings)
     foreach ($entry in $modeFiles.PSObject.Properties) {
-        $remoteFiles[$entry.Name] = $entry.Value
+        $remoteFiles[$entry.Name] = Extract-Version $entry.Value
     }
 
     $skillDirs = @()
@@ -355,7 +364,7 @@ if ($remoteManifestObj.modes) {
     Write-Host ">> Checking for updates..."
 
     foreach ($entry in $remoteManifestObj.files.PSObject.Properties) {
-        $remoteFiles[$entry.Name] = $entry.Value
+        $remoteFiles[$entry.Name] = Extract-Version $entry.Value
     }
     $skillDirs = @()
 } else {
@@ -373,24 +382,27 @@ foreach ($entry in $remoteFiles.GetEnumerator()) {
     $dest = "$TargetDir\$localPath"
     $url = "$RAW_BASE/$path"
 
-    $localVer = Get-ManifestVersion -ManifestPath $localManifestPath -FilePath $path
-    if (-not $localVer) { $localVer = "0.0.0" }
-
     if (-not (Test-Path $dest)) {
         mkdir (Split-Path $dest -Parent) -Force | Out-Null
         Write-Host "  >> $path (new)"
         $ok = Download -Url $url -Dest $dest
         if (-not $ok) { Write-Host "  !! Failed to download $path" }
-    } elseif (Version-Lt $localVer $remoteVer) {
-        Write-Host "  >> $path ($localVer -> $remoteVer)"
-        $answer = Read-Host "    Overwrite? [y/N]"
-        if ($answer -eq "y" -or $answer -eq "Y") {
-            $ok = Download -Url $url -Dest $dest
-            if (-not $ok) { Write-Host "  !! Failed to download $path" }
-        } else {
-            Write-Host "    Skipped."
-        }
     } else {
+        if ($path -like '*/SKILL.md') {
+            $localVer = Get-ManifestVersion -ManifestPath $localManifestPath -FilePath $path
+            if (-not $localVer) { $localVer = "0.0.0" }
+            if (Version-Lt $localVer $remoteVer) {
+                Write-Host "  >> $path ($localVer -> $remoteVer)"
+                $answer = Read-Host "    Overwrite? [y/N]"
+                if ($answer -eq "y" -or $answer -eq "Y") {
+                    $ok = Download -Url $url -Dest $dest
+                    if (-not $ok) { Write-Host "  !! Failed to download $path" }
+                } else {
+                    Write-Host "    Skipped."
+                }
+                continue
+            }
+        }
         Write-Host "     $path (up to date)"
     }
 }
