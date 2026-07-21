@@ -175,7 +175,7 @@ Write-Host ">> Fetching manifest..."
 $localManifestPath = "$TargetDir\.agents\manifest.json"
 $remoteManifest = New-TemporaryFile
 
-$manifestOk = Download -Url "$RAW_BASE/manifest.json" -Dest $remoteManifest.FullName
+$manifestOk = Download -Url "$RAW_BASE/.agents/manifest.json" -Dest $remoteManifest.FullName
 if (-not $manifestOk) {
     Write-Host "  !! Failed to download manifest. Aborting."
     Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
@@ -237,7 +237,7 @@ if ($remoteManifestObj.modes) {
 
     Write-Host ""
     Write-Host ">> Checking for updates..."
-    Write-Host "  Mode: $selectedMode — $modeDesc"
+    Write-Host "  Mode: $selectedMode -> $modeDesc"
 
     # Display skills for the selected mode
     $modeFiles = $remoteManifestObj.modes.$selectedMode.files
@@ -410,7 +410,7 @@ foreach ($entry in $remoteFiles.GetEnumerator()) {
 Remove-Item $remoteManifest.FullName -Force -ErrorAction SilentlyContinue
 
 # Save updated local manifest
-Download -Url "$RAW_BASE/manifest.json" -Dest $localManifestPath | Out-Null
+Download -Url "$RAW_BASE/.agents/manifest.json" -Dest $localManifestPath | Out-Null
 
 # --- Customize AGENTS.md with mode-specific Execution Protocol ---
 if ($selectedMode -and (Test-Path "$TargetDir\AGENTS.md")) {
